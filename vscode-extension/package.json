@@ -1,0 +1,36 @@
+{
+  "name": "codeshiftaai",
+  "displayName": "CodeShiftAI",
+  "description": "VS Code extension for Gemini-powered AI coding assistant",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:codeshiftaai.generateCode"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "codeshiftaai.generateCode",
+        "title": "Generate Code with CodeShiftAI"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "tsc -p ./",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install"
+  },
+  "devDependencies": {
+    "typescript": "^4.6.3",
+    "vscode": "^1.1.37",
+    "@types/node": "^14.0.27",
+    "@types/vscode": "^1.70.0"
+  }
+}
