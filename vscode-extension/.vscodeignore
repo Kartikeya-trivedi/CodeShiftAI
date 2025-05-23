@@ -1,5 +1,22 @@
+<<<<<<< HEAD
 node_modules
 .vscode-test
 out/test
 .gitignore
 README.md
+=======
+.vscode/**
+.vscode-test/**
+out/**
+node_modules/**
+src/**
+.gitignore
+.yarnrc
+esbuild.js
+vsc-extension-quickstart.md
+**/tsconfig.json
+**/eslint.config.mjs
+**/*.map
+**/*.ts
+**/.vscode-test.*
+>>>>>>> c854bf7b9a4e6fc64ae81d9e0cb87788a9b936a0

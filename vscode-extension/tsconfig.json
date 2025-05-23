@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "compilerOptions": {
     "module": "commonjs",
     "target": "es6",
@@ -14,4 +15,20 @@
     "node_modules",
     ".vscode-test"
   ]
+=======
+	"compilerOptions": {
+		"module": "Node16",
+		"target": "ES2022",
+		"lib": [
+			"ES2022"
+		],
+		"sourceMap": true,
+		"rootDir": "src",
+		"strict": true,   /* enable all strict type-checking options */
+		/* Additional Checks */
+		// "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
+		// "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
+		// "noUnusedParameters": true,  /* Report errors on unused parameters. */
+	}
+>>>>>>> c854bf7b9a4e6fc64ae81d9e0cb87788a9b936a0
 }

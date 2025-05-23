@@ -3,3 +3,8 @@ uvicorn[standard]
 httpx
 pydantic
 python-dotenv
+agno>=1.5.3
+google-genai>=1.2.0
+mcp>=1.9.1
+httpx-sse
+starlette
