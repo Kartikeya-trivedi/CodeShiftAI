@@ -1,20 +1,3 @@
-<<<<<<< HEAD
-export async function callGenerateAPI(prompt: string): Promise<string> {
-    try {
-        const response = await fetch('http://localhost:8000/generate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ prompt })
-        });
-        const data = await response.json();
-        return data.result;
-    } catch (error) {
-        return 'Error calling backend API';
-    }
-}
-=======
 import axios from 'axios';
 import * as vscode from 'vscode';
 
@@ -56,4 +39,3 @@ export class ApiService {
     }
   }
 }
->>>>>>> c854bf7b9a4e6fc64ae81d9e0cb87788a9b936a0

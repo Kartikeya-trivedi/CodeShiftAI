@@ -1,29 +1,3 @@
-<<<<<<< HEAD
-import * as vscode from 'vscode';
-import { callGenerateAPI } from './api';
-
-export function activate(context: vscode.ExtensionContext) {
-    let disposable = vscode.commands.registerCommand('codeshiftaai.generateCode', async () => {
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            vscode.window.showInformationMessage('Open a file first to use CodeShiftAI!');
-            return;
-        }
-        const selection = editor.selection;
-        const text = editor.document.getText(selection);
-        if (!text) {
-            vscode.window.showInformationMessage('Select some code or prompt to generate!');
-            return;
-        }
-
-        const result = await callGenerateAPI(text);
-        vscode.window.showInformationMessage('CodeShiftAI result: ' + result);
-    });
-
-    context.subscriptions.push(disposable);
-}
-
-=======
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
@@ -34,11 +8,17 @@ export function activate(context: vscode.ExtensionContext) {
   console.log('CodeShiftAI extension is now active');
   
   const apiService = new ApiService();
-  
-  // Register the chat command
-  let chatCommand = vscode.commands.registerCommand('codeShiftAI.openChat', () => {
-    const panel = createChatPanel(context);
-    context.subscriptions.push(panel);
+
+  // Register the chat view provider for the sidebar
+  const chatViewProvider = new CodeShiftAIChatViewProvider(context);
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider('codeShiftAIView', chatViewProvider)
+  );
+
+  // Register the chat command to reveal the sidebar view
+  let chatCommand = vscode.commands.registerCommand('codeShiftAI.openChat', async () => {
+    await vscode.commands.executeCommand('workbench.view.extension.codeShiftAIViewContainer');
+    // No need to call a non-existent command for the view itself
   });
 
   // Register settings page command
@@ -112,99 +92,98 @@ export function activate(context: vscode.ExtensionContext) {
   });
   
   context.subscriptions.push(chatCommand, explainCodeCommand, openSettingsCommand);
-
-  // Register the activity bar view
-  registerActivityBarView(context);
 }
 
-function registerActivityBarView(context: vscode.ExtensionContext) {
-  // Create and register a TreeDataProvider for the view
-  const treeDataProvider = new CodeShiftAITreeProvider();
-  const treeView = vscode.window.createTreeView('codeShiftAIView', {
-    treeDataProvider,
-    showCollapseAll: false
-  });
-  context.subscriptions.push(treeView);
-}
 
-class CodeShiftAITreeProvider implements vscode.TreeDataProvider<TreeItem> {
-  getTreeItem(element: TreeItem): vscode.TreeItem {
-    return element;
+// WebviewViewProvider for chat in the sidebar
+class CodeShiftAIChatViewProvider implements vscode.WebviewViewProvider {
+  private _view?: vscode.WebviewView;
+  private _context: vscode.ExtensionContext;
+
+  constructor(context: vscode.ExtensionContext) {
+    this._context = context;
   }
-  getChildren(): Thenable<TreeItem[]> {
-    const items = [
-      new TreeItem('Open Chat', 'codeShiftAI.openChat'),
-      new TreeItem('Settings', 'codeShiftAI.openSettings')
-    ];
-    return Promise.resolve(items);
+
+  resolveWebviewView(
+    view: vscode.WebviewView,
+    context: vscode.WebviewViewResolveContext,
+    token: vscode.CancellationToken
+  ) {
+    this._view = view;
+    view.webview.options = {
+      enableScripts: true,
+      localResourceRoots: [vscode.Uri.joinPath(this._context.extensionUri, 'resources')]
+    };
+
+    const iconPath = view.webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'resources', 'icon.svg'));
+
+    view.webview.html = getChatWebviewContent(iconPath);
+    view.webview.onDidReceiveMessage(
+      message => {
+        switch (message.command) {
+          case 'sendMessage':
+            handleUserMessage(view.webview, message.text);
+            return;
+        }
+      },
+      undefined,
+      this._context.subscriptions
+    );
   }
 }
 
-class TreeItem extends vscode.TreeItem {
-  constructor(label: string, command?: string) {
-    super(label, vscode.TreeItemCollapsibleState.None);
-    if (command) {
-      this.command = {
-        command: command,
-        title: ''
-      };
-    }
-  }
-}
-
-function createChatPanel(context: vscode.ExtensionContext) {
-	// Create and show a webview panel
-	const panel = vscode.window.createWebviewPanel(
-		'codeShiftAIChat',
-		'CodeShiftAI Chat',
-		vscode.ViewColumn.Beside,
-		{
-			enableScripts: true,
-			retainContextWhenHidden: true
-		}
-	);
-
-	// Set HTML content
-	panel.webview.html = getChatWebviewContent();
-
-	// Handle messages from webview
-	panel.webview.onDidReceiveMessage(
-		message => {
-			switch (message.command) {
-				case 'sendMessage':
-					handleUserMessage(panel.webview, message.text);
-					return;
-			}
-		},
-		undefined,
-		context.subscriptions
-	);
-
-	return panel;
-}
-
-function getChatWebviewContent() {
+function getChatWebviewContent(iconPath: vscode.Uri) { // Added iconPath parameter
 	return `<!DOCTYPE html>
 	<html lang="en">
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>CodeShiftAI Chat</title>
+		<title>CodeShiftAI</title>
 		<style>
 			body {
 				font-family: var(--vscode-font-family);
 				color: var(--vscode-foreground);
-				background-color: var(--vscode-editor-background);
+				background-color: var(--vscode-sideBar-background, #333333);
 				padding: 0;
 				margin: 0;
 				display: flex;
 				flex-direction: column;
 				height: 100vh;
+				position: relative; /* For z-index context */
+			}
+			#branding-overlay {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				display: flex; 
+				flex-direction: column; 
+				align-items: center; /* Center children horizontally */
+				justify-content: center; /* Center icon-text group vertically */
+				/* padding-top removed */
+				opacity: 0.6; 
+				z-index: 0; 
+				pointer-events: none; 
+			}
+			#branding-icon {
+				width: 300px; /* Fixed width */
+				height: 300px; /* Fixed height */
+				/* max-width removed as width is fixed */
+				margin-bottom: 15px; /* Space between icon and text */
+			}
+			#branding-text {
+				color: var(--vscode-foreground); 
+				text-align: center;
+				font-size: 0.9em;
+				font-weight: 500;
 			}
 			#chat-container {
 				flex: 1;
 				overflow-y: auto;
 				padding: 12px;
+				position: relative; 
+				z-index: 1; /* Above branding overlay */
 			}
 			.message {
 				margin-bottom: 12px;
@@ -222,6 +201,8 @@ function getChatWebviewContent() {
 				display: flex;
 				padding: 12px;
 				border-top: 1px solid var(--vscode-editorWidget-border);
+				position: relative;
+				z-index: 1; /* Above branding overlay */
 			}
 			#message-input {
 				flex: 1;
@@ -243,6 +224,10 @@ function getChatWebviewContent() {
 		</style>
 	</head>
 	<body>
+		<div id="branding-overlay">
+			<img id="branding-icon" src="${iconPath}" alt="CodeShiftAI Icon">
+			<div id="branding-text">CodeShiftAI - Your Personal Code Buddy</div>
+		</div>
 		<div id="chat-container"></div>
 		<div id="input-container">
 			<textarea id="message-input" placeholder="Ask CodeShiftAI..."></textarea>
@@ -303,5 +288,4 @@ function handleUserMessage(webview: vscode.Webview, text: string) {
 }
 
 // This method is called when your extension is deactivated
->>>>>>> c854bf7b9a4e6fc64ae81d9e0cb87788a9b936a0
 export function deactivate() {}

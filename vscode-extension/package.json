@@ -1,71 +1,32 @@
 {
-<<<<<<< HEAD
-  "name": "codeshiftaai",
-  "displayName": "CodeShiftAI",
-  "description": "VS Code extension for Gemini-powered AI coding assistant",
-  "version": "0.0.1",
-  "engines": {
-    "vscode": "^1.70.0"
-=======
   "name": "codeshiftai",
   "displayName": "CodeShiftAI",
   "description": "an AI-powered extension to help you with your code",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.100.0"
->>>>>>> c854bf7b9a4e6fc64ae81d9e0cb87788a9b936a0
   },
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-<<<<<<< HEAD
-    "onCommand:codeshiftaai.generateCode"
-  ],
-  "main": "./out/extension.js",
-  "contributes": {
-    "commands": [
-      {
-        "command": "codeshiftaai.generateCode",
-        "title": "Generate Code with CodeShiftAI"
-      }
-    ]
-  },
-  "scripts": {
-    "vscode:prepublish": "tsc -p ./",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "postinstall": "node ./node_modules/vscode/bin/install"
-  },
-  "devDependencies": {
-    "typescript": "^4.6.3",
-    "vscode": "^1.1.37",
-    "@types/node": "^14.0.27",
-    "@types/vscode": "^1.70.0"
-=======
-    "onCommand:codeshiftai.helloWorld",
-    "onCommand:codeShiftAI.openChat",
-    "onCommand:codeShiftAI.explainCode",
-    "onCommand:codeShiftAI.openSettings"
-  ],
+  "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "codeshiftai.helloWorld",
-        "title": "Hello World"
-      },
-      {
         "command": "codeShiftAI.openChat",
-        "title": "Open CodeShiftAI Chat"
+        "title": "Open CodeShiftAI Chat",
+        "icon": "$(comment-discussion)"
       },
       {
         "command": "codeShiftAI.explainCode",
-        "title": "Explain Code with CodeShiftAI"
+        "title": "Explain Code with CodeShiftAI",
+        "icon": "$(search-code)"
       },
       {
         "command": "codeShiftAI.openSettings",
-        "title": "Open CodeShiftAI Settings"
+        "title": "Open CodeShiftAI Settings",
+        "icon": "$(settings-gear)"
       }
     ],
     "menus": {
@@ -100,7 +61,8 @@
       "codeShiftAIViewContainer": [
         {
           "id": "codeShiftAIView",
-          "name": "CodeShiftAI"
+          "name": "CodeShiftAI",
+          "type": "webview"
         }
       ]
     }
@@ -131,6 +93,5 @@
     "typescript": "^5.8.3",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.5.2"
->>>>>>> c854bf7b9a4e6fc64ae81d9e0cb87788a9b936a0
   }
 }
