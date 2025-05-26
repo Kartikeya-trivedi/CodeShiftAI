@@ -82,7 +82,7 @@ class GeminiClient:
         await self.close()
 
 
-# Example usage (assuming this is in a separate async function):
+# Example usage (assuming this is in a separate async function:
 # async def main():
 #     async with GeminiClient() as gemini_client:
 #         try:
