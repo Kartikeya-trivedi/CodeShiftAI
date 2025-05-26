@@ -8,3 +8,4 @@ google-genai>=1.2.0
 mcp>=1.9.1
 httpx-sse
 starlette
+pinecone-client>=3.0.0
