@@ -175,7 +175,7 @@ class GeminiClient:
         await self.close()
 
 
-# Example usage (assuming this is in a separate async function):
+# Example usage (assuming this is in a separate async function:
 # async def main():
 #     config = GeminiConfiguration()
 #     async with GeminiClient(config=config) as gemini_client:
