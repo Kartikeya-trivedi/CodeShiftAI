@@ -48,10 +48,10 @@ async def run_agent(message: str) -> str:
 
     output_buffer = io.StringIO()
     with contextlib.redirect_stdout(output_buffer):
-        await agent.aprint_response(message, stream=False)  # capture the output as string
+        await agent.aprint_response(message, stream=True)  # capture the output as string
     return output_buffer.getvalue()
 
 # for CLI use
 if __name__ == "__main__":
-    message = sys.argv[1] if len(sys.argv) > 1 else "Analyze this project and suggest improvements"
+    message = sys.argv[1] if len(sys.argv) > 1 else "create me a new file named as fast.py in which you should create a backend for the agent using fastapi the front end is stored in the vscode-extesnsion directory so access that and give me the code for the connection of backend to the frontend using websockets"
     print(asyncio.run(run_agent(message)))

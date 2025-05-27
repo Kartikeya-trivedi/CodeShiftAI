@@ -32,7 +32,7 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-# Serve the HTML page at "/"
+
 @app.get("/", response_class=HTMLResponse)
 async def home_page(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
