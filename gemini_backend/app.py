@@ -33,9 +33,9 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
-@app.get("/", response_class=HTMLResponse)
-async def home_page(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+@app.get("/")
+async def root():
+    return {"message": "FastAPI backend running for VS Code extension."}
 
 # WebSocket endpoint
 @app.websocket("/ws/chat")
@@ -47,11 +47,34 @@ async def websocket_endpoint(websocket: WebSocket):
             try:
                 response = await run_agent(data)
 
-                # Strip ANSI escape sequences from the response
+                
+                                # Remove ANSI sequences
                 ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
-                clean_response = ansi_escape.sub('', response)
+                response = ansi_escape.sub('', response)
 
-                await manager.send_message(f"🤖 Bot: {clean_response.strip()}", websocket)
+                # Extract response content after the last occurrence of "Response"
+                if "Response" in response:
+                    # Try to extract content after last 'Response' block
+                    parts = response.split("Response")
+                    last_part = parts[-1]
+                    
+                    # Remove box characters and extra padding
+                    clean_lines = []
+                    for line in last_part.splitlines():
+                        # Remove border characters and trim whitespace
+                        line = re.sub(r"[┃┏┓┗┛━]+", "", line).strip()
+                        if line:
+                            clean_lines.append(line)
+
+                    clean_response = "\n".join(clean_lines).strip()
+                else:
+                    clean_response = response.strip()
+
+                # If still empty, fallback
+                final_output = clean_response if clean_response else "No response extracted"
+
+                await manager.send_message(final_output, websocket)
+
 
             except Exception as e:
                 await manager.send_message(f"⚠️ Error: {str(e)}", websocket)
@@ -64,6 +87,7 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception as e:
         manager.disconnect(websocket)
         print(f"🔥 Unexpected error: {e}")
+
 
 # Optional: graceful startup/shutdown hooks
 @app.on_event("startup")
