@@ -34,6 +34,14 @@ html, body {
 .header-actions {
     display: flex;
     gap: 4px;
+    align-items: center;
+}
+
+.header-separator {
+    width: 1px;
+    height: 20px;
+    background-color: var(--vscode-panel-border);
+    margin: 0 6px;
 }
 
 .icon-button {
@@ -44,10 +52,51 @@ html, body {
     cursor: pointer;
     color: var(--vscode-icon-foreground);
     transition: background-color 0.2s;
+    position: relative;
 }
 
 .icon-button:hover {
     background-color: var(--vscode-toolbar-hoverBackground);
+}
+
+.icon-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.icon-button:disabled:hover {
+    background-color: transparent;
+}
+
+/* Custom icon styles */
+.custom-icon {
+    width: 16px;
+    height: 16px;
+    filter: brightness(0) saturate(100%) invert(var(--vscode-icon-foreground-brightness, 0.7));
+    transition: filter 0.2s;
+}
+
+.icon-button:disabled .custom-icon {
+    opacity: 0.5;
+}
+
+.icon-button[title="New Chat"] .custom-icon {
+    filter: brightness(0) saturate(100%) invert(0.3) sepia(1) saturate(5) hue-rotate(200deg);
+}
+
+/* Special styling for action groups */
+.icon-button[title="Undo"]:disabled,
+.icon-button[title="Redo"]:disabled {
+    opacity: 0.3;
+}
+
+.icon-button[title="New Chat"] {
+    color: var(--vscode-charts-blue);
+}
+
+.icon-button[title="New Chat"]:hover {
+    background-color: var(--vscode-button-hoverBackground);
+    color: var(--vscode-button-foreground);
 }
 
 /* Chat Container */

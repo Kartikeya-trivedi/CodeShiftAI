@@ -1,19 +1,21 @@
 // Main chat interface JavaScript
 (function() {
     const vscode = acquireVsCodeApi();
-    
-    // Get DOM elements
+      // Get DOM elements
     const messagesContainer = document.getElementById('messagesContainer');
     const messageInput = document.getElementById('messageInput');
     const sendBtn = document.getElementById('sendBtn');
     const clearBtn = document.getElementById('clearBtn');
     const exportBtn = document.getElementById('exportBtn');
     const settingsBtn = document.getElementById('settingsBtn');
+    const undoBtn = document.getElementById('undoBtn');
+    const redoBtn = document.getElementById('redoBtn');
+    const newChatBtn = document.getElementById('newChatBtn');
     const typingIndicator = document.getElementById('typingIndicator');
 
     let messages = [];
-
-    // Initialize event listeners
+    let messageHistory = []; // For undo/redo functionality
+    let historyIndex = -1;    // Initialize event listeners
     function init() {
         // Auto-resize textarea
         messageInput.addEventListener('input', handleInputChange);
@@ -24,12 +26,18 @@
         clearBtn.addEventListener('click', clearChat);
         exportBtn.addEventListener('click', exportChat);
         settingsBtn.addEventListener('click', openSettings);
+        undoBtn.addEventListener('click', undoAction);
+        redoBtn.addEventListener('click', redoAction);
+        newChatBtn.addEventListener('click', newChat);
         
         // Focus input
         messageInput.focus();
         
         // Listen for messages from extension
         window.addEventListener('message', handleExtensionMessage);
+        
+        // Update button states
+        updateUndoRedoButtons();
     }
 
     function handleInputChange() {
@@ -49,11 +57,14 @@
                 sendMessage();
             }
         }
-    }
-
-    function sendMessage() {
+    }    function sendMessage() {
         const text = messageInput.value.trim();
-        if (!text) return;
+        if (!text) {
+            return;
+        }
+
+        // Save state for undo functionality
+        saveMessageState();
 
         // Clear input
         messageInput.value = '';
@@ -68,12 +79,16 @@
     }
 
     function clearChat() {
-        if (messages.length === 0) return;
+        if (messages.length === 0) {
+            return;
+        }
         
         if (confirm('Are you sure you want to clear the chat history?')) {
+            saveMessageState();
             messages = [];
             messagesContainer.innerHTML = getWelcomeMessage();
             vscode.postMessage({ command: 'clearChat' });
+            updateUndoRedoButtons();
         }
     }
 
@@ -95,13 +110,88 @@
             command: 'exportChat',
             data: chatData
         });
-    }
-
-    function openSettings() {
+    }    function openSettings() {
         vscode.postMessage({ command: 'openSettings' });
     }
 
-    function handleExtensionMessage(event) {
+    // New functions for undo, redo, and new chat
+    function newChat() {
+        if (messages.length > 0) {
+            if (confirm('Start a new chat? Current conversation will be saved to history.')) {
+                saveMessageState();
+                messages = [];
+                messagesContainer.innerHTML = getWelcomeMessage();
+                vscode.postMessage({ command: 'newChat' });
+                updateUndoRedoButtons();
+            }
+        } else {
+            // Already empty, just refresh
+            messagesContainer.innerHTML = getWelcomeMessage();
+            vscode.postMessage({ command: 'newChat' });
+        }
+    }
+
+    function undoAction() {
+        if (historyIndex > 0) {
+            historyIndex--;
+            restoreMessageState(messageHistory[historyIndex]);
+            updateUndoRedoButtons();
+            vscode.postMessage({ command: 'undo' });
+        }
+    }
+
+    function redoAction() {
+        if (historyIndex < messageHistory.length - 1) {
+            historyIndex++;
+            restoreMessageState(messageHistory[historyIndex]);
+            updateUndoRedoButtons();
+            vscode.postMessage({ command: 'redo' });
+        }
+    }
+
+    function saveMessageState() {
+        // Remove any future history if we're not at the end
+        if (historyIndex < messageHistory.length - 1) {
+            messageHistory = messageHistory.slice(0, historyIndex + 1);
+        }
+        
+        // Add current state to history
+        messageHistory.push(JSON.parse(JSON.stringify(messages)));
+        historyIndex = messageHistory.length - 1;
+        
+        // Limit history size
+        if (messageHistory.length > 50) {
+            messageHistory.shift();
+            historyIndex--;
+        }
+        
+        updateUndoRedoButtons();
+    }
+
+    function restoreMessageState(state) {
+        messages = JSON.parse(JSON.stringify(state));
+        
+        // Clear and rebuild the messages container
+        messagesContainer.innerHTML = '';
+        
+        if (messages.length === 0) {
+            messagesContainer.innerHTML = getWelcomeMessage();
+        } else {
+            messages.forEach(message => {
+                const messageEl = createMessageElement(message);
+                messagesContainer.appendChild(messageEl);
+            });
+        }
+        
+        scrollToBottom();
+    }
+
+    function updateUndoRedoButtons() {
+        if (undoBtn && redoBtn) {
+            undoBtn.disabled = historyIndex <= 0;
+            redoBtn.disabled = historyIndex >= messageHistory.length - 1;
+        }
+    }    function handleExtensionMessage(event) {
         const message = event.data;
         
         switch (message.command) {
@@ -120,11 +210,26 @@
             case 'exportMessages':
                 exportMessages();
                 break;
+            case 'newChat':
+                // Handle new chat command from extension
+                newChat();
+                break;
+            case 'undo':
+                // Handle undo command from extension
+                undoAction();
+                break;
+            case 'redo':
+                // Handle redo command from extension
+                redoAction();
+                break;
         }
-    }
-
-    function addMessage(message) {
+    }function addMessage(message) {
         messages.push(message);
+        
+        // Save state for undo functionality when assistant responds
+        if (message.type === 'assistant') {
+            saveMessageState();
+        }
         
         // Remove welcome message if it exists
         const welcomeMsg = messagesContainer.querySelector('.welcome-message');
@@ -202,11 +307,13 @@
 
     function hideTypingIndicator() {
         typingIndicator.style.display = 'none';
-    }
-
-    function clearMessages() {
+    }    function clearMessages() {
+        saveMessageState();
         messages = [];
+        messageHistory = [];
+        historyIndex = -1;
         messagesContainer.innerHTML = getWelcomeMessage();
+        updateUndoRedoButtons();
     }
 
     function exportMessages() {

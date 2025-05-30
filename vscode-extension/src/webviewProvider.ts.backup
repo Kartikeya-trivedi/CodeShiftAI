@@ -23,9 +23,7 @@ export class CodeShiftWebviewProvider implements vscode.WebviewViewProvider {
       localResourceRoots: [this._extensionUri]
     };
 
-    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
-
-    // Handle messages from webview
+    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);    // Handle messages from webview
     webviewView.webview.onDidReceiveMessage(
       message => {
         switch (message.command) {
@@ -55,9 +53,7 @@ export class CodeShiftWebviewProvider implements vscode.WebviewViewProvider {
   }
 
   private async handleChatMessage(message: string) {
-    if (!this._view) {
-      return;
-    }
+    if (!this._view) return;
 
     // Add user message to chat
     this._view.webview.postMessage({
@@ -105,57 +101,42 @@ export class CodeShiftWebviewProvider implements vscode.WebviewViewProvider {
       command: 'hideTyping'
     });
   }
-
   private clearChat() {
-    if (!this._view) {
-      return;
-    }
+    if (!this._view) return;
     this._view.webview.postMessage({ command: 'clearMessages' });
   }
 
   private newChat() {
-    if (!this._view) {
-      return;
-    }
+    if (!this._view) return;
     this._view.webview.postMessage({ command: 'newChat' });
     // Execute VS Code command for new chat
     vscode.commands.executeCommand('codeShiftAI.newChat');
   }
 
   private handleUndo() {
-    if (!this._view) {
-      return;
-    }
+    if (!this._view) return;
     this._view.webview.postMessage({ command: 'undo' });
     // Execute VS Code undo command
     vscode.commands.executeCommand('codeShiftAI.undo');
   }
 
   private handleRedo() {
-    if (!this._view) {
-      return;
-    }
+    if (!this._view) return;
     this._view.webview.postMessage({ command: 'redo' });
     // Execute VS Code redo command
     vscode.commands.executeCommand('codeShiftAI.redo');
   }
 
   private exportChat() {
-    if (!this._view) {
-      return;
-    }
+    if (!this._view) return;
     this._view.webview.postMessage({ command: 'exportMessages' });
   }
+
   private _getHtmlForWebview(webview: vscode.Webview) {
     const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css'));
     const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css'));
     const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.css'));
     const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.js'));
-    
-    // Custom icon URIs
-    const undoIconUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'resources', 'undo-icon.svg'));
-    const redoIconUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'resources', 'redo-icon.svg'));
-    const newChatIconUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'resources', 'new-chat-icon.svg'));
 
     const nonce = getNonce();
 
@@ -163,26 +144,27 @@ export class CodeShiftWebviewProvider implements vscode.WebviewViewProvider {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}'; img-src ${webview.cspSource} data:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="${styleResetUri}" rel="stylesheet">
     <link href="${styleVSCodeUri}" rel="stylesheet">
     <link href="${styleMainUri}" rel="stylesheet">
     <title>CodeShiftAI Chat</title>
 </head>
-<body>
-    <div class="chat-header">
+<body>    <div class="chat-header">
         <div class="header-title">
             <span class="codicon codicon-robot"></span>
             <span>CodeShiftAI Assistant</span>
-        </div>        <div class="header-actions">            <button id="undoBtn" class="icon-button" title="Undo">
-                <img src="${undoIconUri}" alt="Undo" class="custom-icon">
+        </div>
+        <div class="header-actions">
+            <button id="undoBtn" class="icon-button" title="Undo">
+                <span class="codicon codicon-discard"></span>
             </button>
             <button id="redoBtn" class="icon-button" title="Redo">
-                <img src="${redoIconUri}" alt="Redo" class="custom-icon">
+                <span class="codicon codicon-redo"></span>
             </button>
             <button id="newChatBtn" class="icon-button" title="New Chat">
-                <img src="${newChatIconUri}" alt="New Chat" class="custom-icon">
+                <span class="codicon codicon-add"></span>
             </button>
             <div class="header-separator"></div>
             <button id="clearBtn" class="icon-button" title="Clear Chat">
