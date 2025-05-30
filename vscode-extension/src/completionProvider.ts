@@ -5,7 +5,7 @@ export class CodeShiftCompletionProvider implements vscode.InlineCompletionItemP
   private apiService: ApiService;
   
   constructor() {
-    this.apiService = new ApiService();
+    this.apiService = new ApiService('http://127.0.0.1:8000'); // Updated to match FastAPI backend port
   }
   
   async provideInlineCompletionItems(

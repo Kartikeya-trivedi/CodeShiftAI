@@ -88,8 +88,6 @@ async def websocket_endpoint(websocket: WebSocket):
         manager.disconnect(websocket)
         print(f"🔥 Unexpected error: {e}")
 
-
-# Optional: graceful startup/shutdown hooks
 @app.on_event("startup")
 async def startup_event():
     print("🚀 FastAPI app started")
