@@ -11,9 +11,77 @@
   ],
   "activationEvents": [],
   "main": "./dist/extension.js",
-  "contributes": {
-    "commands": [
+  "contributes": {    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "codeShiftAI",
+          "title": "CodeShiftAI",
+          "icon": "resources/icon.svg"
+        }
+      ],
+      "panel": [
+        {
+          "id": "codeShiftAI-panel",
+          "title": "CodeShiftAI",
+          "icon": "$(robot)"
+        }
+      ]
+    },
+    "views": {
+      "codeShiftAI": [
+        {
+          "id": "codeShiftAI.chatView",
+          "name": "Chat",
+          "type": "webview",
+          "icon": "$(comment-discussion)",
+          "contextualTitle": "CodeShiftAI Chat"
+        },
+        {
+          "id": "codeShiftAI.historyView",
+          "name": "History",
+          "icon": "$(history)",
+          "contextualTitle": "CodeShiftAI History"
+        },
+        {
+          "id": "codeShiftAI.settingsView",
+          "name": "Settings",
+          "icon": "$(settings-gear)",
+          "contextualTitle": "CodeShiftAI Settings"
+        }
+      ],
+      "codeShiftAI-panel": [
+        {
+          "id": "codeShiftAI.outputView",
+          "name": "Output",
+          "icon": "$(output)",
+          "contextualTitle": "CodeShiftAI Output"
+        }
+      ],
+      "explorer": [
+        {
+          "id": "codeShiftAI.filesView",
+          "name": "AI Assistant",
+          "icon": "$(robot)",
+          "contextualTitle": "CodeShiftAI Files",
+          "when": "workspaceFolderCount > 0"
+        }
+      ]
+    },
+    "viewsWelcome": [
       {
+        "view": "codeShiftAI.historyView",
+        "contents": "No chat history yet.\n\nYour conversations with CodeShiftAI will appear here.\n\n[Start First Chat](command:codeShiftAI.openChat)\n\nTip: Use the chat to ask questions about your code!"
+      },
+      {
+        "view": "codeShiftAI.settingsView",
+        "contents": "Configure CodeShiftAI settings.\n\n[Open Settings](command:codeShiftAI.openSettings)\n[Reset to Defaults](command:codeShiftAI.resetSettings)"
+      },
+      {
+        "view": "codeShiftAI.filesView",
+        "contents": "AI-powered file assistance.\n\n[Analyze Current File](command:codeShiftAI.analyzeFile)\n[Find Similar Files](command:codeShiftAI.findSimilar)"
+      }
+    ],
+    "commands": [      {
         "command": "codeShiftAI.openChat",
         "title": "Open CodeShiftAI Chat",
         "icon": "$(comment-discussion)"
@@ -24,21 +92,173 @@
         "icon": "$(search-code)"
       },
       {
+        "command": "codeShiftAI.fixCode",
+        "title": "Fix Code with CodeShiftAI",
+        "icon": "$(tools)"
+      },
+      {
+        "command": "codeShiftAI.optimizeCode",
+        "title": "Optimize Code with CodeShiftAI",
+        "icon": "$(rocket)"
+      },
+      {
+        "command": "codeShiftAI.generateTests",
+        "title": "Generate Tests with CodeShiftAI",
+        "icon": "$(beaker)"
+      },
+      {
+        "command": "codeShiftAI.generateDocs",
+        "title": "Generate Documentation with CodeShiftAI",
+        "icon": "$(book)"
+      },
+      {
+        "command": "codeShiftAI.refactorCode",
+        "title": "Refactor Code with CodeShiftAI",
+        "icon": "$(symbol-method)"
+      },
+      {
         "command": "codeShiftAI.openSettings",
         "title": "Open CodeShiftAI Settings",
         "icon": "$(settings-gear)"
+      },
+      {
+        "command": "codeShiftAI.clearHistory",
+        "title": "Clear Chat History",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "codeShiftAI.exportChat",
+        "title": "Export Chat",
+        "icon": "$(export)"
+      },
+      {
+        "command": "codeShiftAI.toggleSetting",
+        "title": "Toggle Setting",
+        "icon": "$(toggle)"
+      },
+      {
+        "command": "codeShiftAI.editSetting",
+        "title": "Edit Setting",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "codeShiftAI.resetSettings",
+        "title": "Reset Settings",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "codeShiftAI.analyzeFile",
+        "title": "Analyze Current File",
+        "icon": "$(search)"
+      },
+      {
+        "command": "codeShiftAI.findSimilar",
+        "title": "Find Similar Files",
+        "icon": "$(references)"
+      },
+      {
+        "command": "codeShiftAI.openWebview",
+        "title": "Open CodeShiftAI Webview",
+        "icon": "$(browser)"
       }
-    ],
-    "menus": {
+    ],    "menus": {
+      "view/title": [
+        {
+          "command": "codeShiftAI.clearHistory",
+          "when": "view == codeShiftAI.historyView",
+          "group": "navigation"
+        },
+        {
+          "command": "codeShiftAI.exportChat",
+          "when": "view == codeShiftAI.historyView",
+          "group": "navigation"
+        },
+        {
+          "command": "codeShiftAI.resetSettings",
+          "when": "view == codeShiftAI.settingsView",
+          "group": "navigation"
+        },
+        {
+          "command": "codeShiftAI.openWebview",
+          "when": "view == codeShiftAI.chatView",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "codeShiftAI.toggleSetting",
+          "when": "view == codeShiftAI.settingsView && viewItem == setting",
+          "group": "inline"
+        },
+        {
+          "command": "codeShiftAI.editSetting",
+          "when": "view == codeShiftAI.settingsView && viewItem == setting",
+          "group": "inline"
+        }
+      ],
       "editor/context": [
         {
           "when": "editorHasSelection",
           "command": "codeShiftAI.explainCode",
-          "group": "navigation"
+          "group": "codeshift@1"
+        },
+        {
+          "when": "editorHasSelection",
+          "command": "codeShiftAI.fixCode",
+          "group": "codeshift@2"
+        },
+        {
+          "when": "editorHasSelection",
+          "command": "codeShiftAI.optimizeCode",
+          "group": "codeshift@3"
+        },
+        {
+          "when": "editorHasSelection",
+          "command": "codeShiftAI.generateTests",
+          "group": "codeshift@4"
+        },
+        {
+          "when": "editorHasSelection",
+          "command": "codeShiftAI.generateDocs",
+          "group": "codeshift@5"
+        },
+        {
+          "when": "editorHasSelection",
+          "command": "codeShiftAI.refactorCode",
+          "group": "codeshift@6"
+        },
+        {
+          "command": "codeShiftAI.analyzeFile",
+          "group": "codeshift@7"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "codeShiftAI.explainCode",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "codeShiftAI.fixCode",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "codeShiftAI.optimizeCode",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "codeShiftAI.generateTests",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "codeShiftAI.generateDocs",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "codeShiftAI.refactorCode",
+          "when": "editorHasSelection"
         }
       ]
-    },
-    "configuration": {
+    },    "configuration": {
       "title": "CodeShiftAI",
       "properties": {
         "codeShiftAI.apiUrl": {
@@ -47,24 +267,6 @@
           "description": "URL for the CodeShiftAI backend API"
         }
       }
-    },
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "codeShiftAIViewContainer",
-          "title": "CodeShiftAI",
-          "icon": "resources/icon.svg"
-        }
-      ]
-    },
-    "views": {
-      "codeShiftAIViewContainer": [
-        {
-          "id": "codeShiftAIView",
-          "name": "CodeShiftAI",
-          "type": "webview"
-        }
-      ]
     }
   },
   "scripts": {
