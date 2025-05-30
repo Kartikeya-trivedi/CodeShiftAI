@@ -9,7 +9,7 @@ export class CodeShiftCompletionProvider implements vscode.InlineCompletionItemP
   private completionCache = new Map<string, string>();
   
   constructor(statusBar?: StatusBarManager) {
-    this.apiService = new ApiService();
+    this.apiService = new ApiService('http://127.0.0.1:8000');
     this.statusBar = statusBar;
   }
   

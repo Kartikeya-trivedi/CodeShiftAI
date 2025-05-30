@@ -5,7 +5,7 @@ export class CodeShiftCodeActionsProvider implements vscode.CodeActionProvider {
   private apiService: ApiService;
 
   constructor() {
-    this.apiService = new ApiService();
+    this.apiService = new ApiService('http://127.0.0.1:8000');
   }
 
   async provideCodeActions(

@@ -11,7 +11,8 @@
   ],
   "activationEvents": [],
   "main": "./dist/extension.js",
-  "contributes": {    "viewsContainers": {
+  "contributes": {
+    "viewsContainers": {
       "activitybar": [
         {
           "id": "codeShiftAI",
@@ -81,7 +82,8 @@
         "contents": "AI-powered file assistance.\n\n[Analyze Current File](command:codeShiftAI.analyzeFile)\n[Find Similar Files](command:codeShiftAI.findSimilar)"
       }
     ],
-    "commands": [      {
+    "commands": [
+      {
         "command": "codeShiftAI.openChat",
         "title": "Open CodeShiftAI Chat",
         "icon": "$(comment-discussion)"
@@ -161,7 +163,8 @@
         "title": "Open CodeShiftAI Webview",
         "icon": "$(browser)"
       }
-    ],    "menus": {
+    ],
+    "menus": {
       "view/title": [
         {
           "command": "codeShiftAI.clearHistory",
@@ -258,7 +261,8 @@
           "when": "editorHasSelection"
         }
       ]
-    },    "configuration": {
+    },
+    "configuration": {
       "title": "CodeShiftAI",
       "properties": {
         "codeShiftAI.apiUrl": {

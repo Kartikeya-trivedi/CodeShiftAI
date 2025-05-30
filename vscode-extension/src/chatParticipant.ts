@@ -5,7 +5,7 @@ export class CodeShiftChatParticipant {
   private apiService: ApiService;
 
   constructor() {
-    this.apiService = new ApiService();
+    this.apiService = new ApiService('http://127.0.0.1:8000');
   }
 
   // Register the chat participant
@@ -170,7 +170,7 @@ export class CodeShiftChatParticipant {
       
       if (fixResponse.suggestions && fixResponse.suggestions.length > 0) {
         stream.markdown('\n\n## Additional Suggestions\n\n');
-        fixResponse.suggestions.forEach((suggestion, index) => {
+        fixResponse.suggestions.forEach((suggestion: any, index: number) => {
           stream.markdown(`${index + 1}. ${suggestion}\n`);
         });
       }
@@ -200,7 +200,7 @@ export class CodeShiftChatParticipant {
       
       if (optimizeResponse.suggestions && optimizeResponse.suggestions.length > 0) {
         stream.markdown('\n\n## Optimization Notes\n\n');
-        optimizeResponse.suggestions.forEach((suggestion, index) => {
+        optimizeResponse.suggestions.forEach((suggestion: any, index: number) => {
           stream.markdown(`${index + 1}. ${suggestion}\n`);
         });
       }
@@ -230,7 +230,7 @@ export class CodeShiftChatParticipant {
       
       if (testResponse.suggestions && testResponse.suggestions.length > 0) {
         stream.markdown('\n\n## Testing Recommendations\n\n');
-        testResponse.suggestions.forEach((suggestion, index) => {
+        testResponse.suggestions.forEach((suggestion: any, index: number) => {
           stream.markdown(`${index + 1}. ${suggestion}\n`);
         });
       }
@@ -260,7 +260,7 @@ export class CodeShiftChatParticipant {
       
       if (docsResponse.suggestions && docsResponse.suggestions.length > 0) {
         stream.markdown('\n\n## Documentation Improvements\n\n');
-        docsResponse.suggestions.forEach((suggestion, index) => {
+        docsResponse.suggestions.forEach((suggestion: any, index: number) => {
           stream.markdown(`${index + 1}. ${suggestion}\n`);
         });
       }
@@ -291,7 +291,7 @@ export class CodeShiftChatParticipant {
       
       if (refactorResponse.suggestions && refactorResponse.suggestions.length > 0) {
         stream.markdown('\n\n## Refactoring Notes\n\n');
-        refactorResponse.suggestions.forEach((suggestion, index) => {
+        refactorResponse.suggestions.forEach((suggestion: any, index: number) => {
           stream.markdown(`${index + 1}. ${suggestion}\n`);
         });
       }
