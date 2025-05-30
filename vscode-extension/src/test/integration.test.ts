@@ -7,7 +7,7 @@ import { StatusBarManager } from '../statusBar';
 suite('Integration Test Suite', () => {
 	
 	suite('API Service Integration', () => {		test('Should handle API errors gracefully', async () => {
-			const apiService = new ApiService();
+			const apiService = new ApiService('http://127.0.0.1:8000');
 			
 			try {
 				// This should fail gracefully with our error handling
@@ -21,7 +21,7 @@ suite('Integration Test Suite', () => {
 		});
 
 		test('Should validate health check functionality', async () => {
-			const apiService = new ApiService();
+			const apiService = new ApiService('http://127.0.0.1:8000');
 			
 			try {
 				const isHealthy = await apiService.healthCheck();
@@ -66,7 +66,7 @@ suite('Integration Test Suite', () => {
 
 		test('Should handle connection checking', async () => {
 			const statusBar = new StatusBarManager();
-			const apiService = new ApiService();
+			const apiService = new ApiService('http://127.0.0.1:8000');
 			
 			// This will fail but should handle gracefully
 			await statusBar.checkConnection(apiService);
@@ -142,7 +142,7 @@ suite('Integration Test Suite', () => {
 	suite('Error Handling Integration', () => {
 		test('Should handle various error scenarios', async () => {
 			// Test API service error handling
-			const apiService = new ApiService();
+			const apiService = new ApiService('http://127.0.0.1:8000');
 			
 			const testCases = [
 				{ method: 'sendChatMessage', args: [''] },

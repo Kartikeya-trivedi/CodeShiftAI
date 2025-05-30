@@ -6,9 +6,20 @@ export class CodeShiftWebviewProvider implements vscode.WebviewViewProvider {
   
   private _view?: vscode.WebviewView;
   private _extensionUri: vscode.Uri;
+  private _onDidReceiveMessageListeners: Array<(msg: any) => void> = [];
 
   constructor(private readonly context: vscode.ExtensionContext) {
     this._extensionUri = context.extensionUri;
+  }
+
+  public postMessageToWebview(message: any) {
+    if (this._view) {
+      this._view.webview.postMessage(message);
+    }
+  }
+
+  public onDidReceiveMessage(listener: (msg: any) => void) {
+    this._onDidReceiveMessageListeners.push(listener);
   }
 
   public resolveWebviewView(
@@ -28,6 +39,9 @@ export class CodeShiftWebviewProvider implements vscode.WebviewViewProvider {
     // Handle messages from webview
     webviewView.webview.onDidReceiveMessage(
       message => {
+        // Call all registered listeners (for WebSocket integration)
+        this._onDidReceiveMessageListeners.forEach(listener => listener(message));
+        // Existing logic (for legacy/demo):
         switch (message.command) {
           case 'sendMessage':
             this.handleChatMessage(message.text);
@@ -73,37 +87,7 @@ export class CodeShiftWebviewProvider implements vscode.WebviewViewProvider {
     this._view.webview.postMessage({
       command: 'showTyping'
     });
-
-    try {
-      // Simulate AI response (replace with actual API call)
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const aiResponse = `I understand you're asking about: "${message}". This is a demo response from CodeShiftAI. In a real implementation, this would connect to your AI backend.`;
-
-      // Add AI response
-      this._view.webview.postMessage({
-        command: 'addMessage',
-        message: {
-          type: 'assistant',
-          content: aiResponse,
-          timestamp: new Date().toISOString()
-        }
-      });
-    } catch (error) {
-      this._view.webview.postMessage({
-        command: 'addMessage',
-        message: {
-          type: 'error',
-          content: 'Sorry, there was an error processing your request.',
-          timestamp: new Date().toISOString()
-        }
-      });
-    }
-
-    // Hide typing indicator
-    this._view.webview.postMessage({
-      command: 'hideTyping'
-    });
+    // Do not add any AI response here; WebSocket will handle it
   }
 
   private clearChat() {
