@@ -1,5 +1,5 @@
-<!-- Redo Icon -->
-<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-  <path d="M13.5 8a5.5 5.5 0 0 0-9.793-3.207l1.086 1.086A4 4 0 1 1 9.5 12H7v1h2.5A5.5 5.5 0 0 0 13.5 8z"/>
-  <path d="M5.646 1.646a.5.5 0 0 0 0 .708L8.293 5 5.646 7.646a.5.5 0 0 0 .708.708L9.707 5 6.354 1.646a.5.5 0 0 0-.708 0z"/>
+<!-- Redo Icon - Arrow pointing RIGHT -->
+<svg width="16" height="16" viewBox="0 0 16 16" fill="white" xmlns="http://www.w3.org/2000/svg">
+  <path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z" fill="white"/>
+  <path d="M8 4.466V2.534a.25.25 0 0 1 .41-.192l2.36 1.966a.25.25 0 0 1 0 .384L8.41 6.658A.25.25 0 0 1 8 6.466V4.466z" fill="white"/>
 </svg>

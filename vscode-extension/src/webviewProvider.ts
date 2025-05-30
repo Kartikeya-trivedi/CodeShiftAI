@@ -151,11 +151,14 @@ export class CodeShiftWebviewProvider implements vscode.WebviewViewProvider {
     const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css'));
     const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.css'));
     const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.js'));
-    
-    // Custom icon URIs
+      // Custom icon URIs
     const undoIconUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'resources', 'undo-icon.svg'));
     const redoIconUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'resources', 'redo-icon.svg'));
     const newChatIconUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'resources', 'new-chat-icon.svg'));
+    const clearIconUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'resources', 'clear-icon.svg'));
+    const exportIconUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'resources', 'export-icon.svg'));
+    const settingsIconUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'resources', 'settings-icon.svg'));
+    const sendIconUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'resources', 'send-icon.svg'));
 
     const nonce = getNonce();
 
@@ -183,16 +186,15 @@ export class CodeShiftWebviewProvider implements vscode.WebviewViewProvider {
             </button>
             <button id="newChatBtn" class="icon-button" title="New Chat">
                 <img src="${newChatIconUri}" alt="New Chat" class="custom-icon">
-            </button>
-            <div class="header-separator"></div>
+            </button>            <div class="header-separator"></div>
             <button id="clearBtn" class="icon-button" title="Clear Chat">
-                <span class="codicon codicon-clear-all"></span>
+                <img src="${clearIconUri}" alt="Clear Chat" class="custom-icon">
             </button>
             <button id="exportBtn" class="icon-button" title="Export Chat">
-                <span class="codicon codicon-export"></span>
+                <img src="${exportIconUri}" alt="Export Chat" class="custom-icon">
             </button>
             <button id="settingsBtn" class="icon-button" title="Settings">
-                <span class="codicon codicon-settings-gear"></span>
+                <img src="${settingsIconUri}" alt="Settings" class="custom-icon">
             </button>
         </div>
     </div>
@@ -233,9 +235,8 @@ export class CodeShiftWebviewProvider implements vscode.WebviewViewProvider {
                 rows="1"
                 maxlength="2000"
             ></textarea>
-            <div class="input-actions">
-                <button id="sendBtn" class="send-button" disabled>
-                    <span class="codicon codicon-send"></span>
+            <div class="input-actions">                <button id="sendBtn" class="send-button" disabled>
+                    <img src="${sendIconUri}" alt="Send" class="custom-icon">
                 </button>
             </div>
         </div>

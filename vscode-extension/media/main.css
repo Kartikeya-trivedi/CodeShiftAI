@@ -72,16 +72,11 @@ html, body {
 .custom-icon {
     width: 16px;
     height: 16px;
-    filter: brightness(0) saturate(100%) invert(var(--vscode-icon-foreground-brightness, 0.7));
-    transition: filter 0.2s;
+    transition: opacity 0.2s;
 }
 
 .icon-button:disabled .custom-icon {
-    opacity: 0.5;
-}
-
-.icon-button[title="New Chat"] .custom-icon {
-    filter: brightness(0) saturate(100%) invert(0.3) sepia(1) saturate(5) hue-rotate(200deg);
+    opacity: 0.3;
 }
 
 /* Special styling for action groups */

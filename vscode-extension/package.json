@@ -11,13 +11,12 @@
   ],
   "activationEvents": [],
   "main": "./dist/extension.js",
-  "contributes": {
-    "viewsContainers": {
+  "contributes": {    "viewsContainers": {
       "activitybar": [
         {
           "id": "codeShiftAI",
           "title": "CodeShiftAI",
-          "icon": "$(robot)"
+          "icon": "resources/icon.svg"
         }
       ],
       "panel": [
