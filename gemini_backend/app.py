@@ -37,6 +37,17 @@ manager = ConnectionManager()
 async def root():
     return {"message": "FastAPI backend running for VS Code extension."}
 
+@app.post("/chat")
+async def chat_endpoint(request:Request):
+    data= await request.json()
+    response= await run_agent(data.get("message", ""))
+    return {"response": response}
+   
+@app.post("/inline-completion")
+async def inline_compeltetion(request: Request):
+    data = await data.json()
+    return {"messgage: ":data}    #return {"message": "Chat endpoint is ready."})
+
 # WebSocket endpoint
 @app.websocket("/ws/chat")
 async def websocket_endpoint(websocket: WebSocket):
