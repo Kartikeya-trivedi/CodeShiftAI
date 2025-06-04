@@ -46,7 +46,74 @@ async def chat_endpoint(request:Request):
 @app.post("/inline-completion")
 async def inline_compeltetion(request: Request):
     data = await data.json()
-    return {"messgage: ":data}    #return {"message": "Chat endpoint is ready."})
+    return {"messgage: ":data}    
+
+@app.post("/explain-code")
+async def explain_code(request: Request):
+    data = await request.json()
+    code = data.get("code", "")
+    language = data.get("language", "")
+    file_path = data.get("filePath", "")
+    context = data.get("context", "")
+    prompt = f"Explain the following {language} code from {file_path}:\n{code}\n{context}"
+    response = await run_agent(prompt)
+    return {"result": response}
+
+@app.post("/fix-code")
+async def fix_code(request: Request):
+    data = await request.json()
+    code = data.get("code", "")
+    language = data.get("language", "")
+    file_path = data.get("filePath", "")
+    context = data.get("context", "")
+    prompt = f"Fix any issues or bugs in the following {language} code from {file_path}:\n{code}\n{context}"
+    response = await run_agent(prompt)
+    return {"result": response}
+
+@app.post("/optimize-code")
+async def optimize_code(request: Request):
+    data = await request.json()
+    code = data.get("code", "")
+    language = data.get("language", "")
+    file_path = data.get("filePath", "")
+    context = data.get("context", "")
+    prompt = f"Optimize the following {language} code from {file_path} for performance and readability:\n{code}\n{context}"
+    response = await run_agent(prompt)
+    return {"result": response}
+
+@app.post("/generate-tests")
+async def generate_tests(request: Request):
+    data = await request.json()
+    code = data.get("code", "")
+    language = data.get("language", "")
+    file_path = data.get("filePath", "")
+    context = data.get("context", "")
+    prompt = f"Generate unit tests for the following {language} code from {file_path}:\n{code}\n{context}"
+    response = await run_agent(prompt)
+    return {"result": response}
+
+@app.post("/generate-docs")
+async def generate_docs(request: Request):
+    data = await request.json()
+    code = data.get("code", "")
+    language = data.get("language", "")
+    file_path = data.get("filePath", "")
+    context = data.get("context", "")
+    prompt = f"Generate documentation for the following {language} code from {file_path}:\n{code}\n{context}"
+    response = await run_agent(prompt)
+    return {"result": response}
+
+@app.post("/refactor-code")
+async def refactor_code(request: Request):
+    data = await request.json()
+    code = data.get("code", "")
+    language = data.get("language", "")
+    file_path = data.get("filePath", "")
+    refactor_type = data.get("refactorType", "general")
+    context = data.get("context", "")
+    prompt = f"Refactor the following {language} code from {file_path} for {refactor_type}:\n{code}\n{context}"
+    response = await run_agent(prompt)
+    return {"result": response}
 
 # WebSocket endpoint
 @app.websocket("/ws/chat")
