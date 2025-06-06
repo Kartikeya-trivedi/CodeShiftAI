@@ -11,7 +11,6 @@
     const undoBtn = document.getElementById('undoBtn');
     const redoBtn = document.getElementById('redoBtn');
     const newChatBtn = document.getElementById('newChatBtn');
-    const typingIndicator = document.getElementById('typingIndicator');
 
     let messages = [];
     let messageHistory = []; // For undo/redo functionality
@@ -301,12 +300,26 @@
     }
 
     function showTypingIndicator() {
-        typingIndicator.style.display = 'flex';
+        // If already present, do nothing
+        if (document.getElementById('typingIndicator')) { return; }
+        const indicator = document.createElement('div');
+        indicator.id = 'typingIndicator';
+        indicator.className = 'typing-indicator';
+        indicator.innerHTML = `
+            <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <span>CodeShiftAI is thinking...</span>
+        `;
+        messagesContainer.appendChild(indicator);
         scrollToBottom();
     }
 
     function hideTypingIndicator() {
-        typingIndicator.style.display = 'none';
+        const indicator = document.getElementById('typingIndicator');
+        if (indicator) { indicator.remove(); }
     }    function clearMessages() {
         saveMessageState();
         messages = [];

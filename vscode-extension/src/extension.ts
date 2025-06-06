@@ -282,15 +282,8 @@ export function activate(context: vscode.ExtensionContext) {
   // WebSocket chat integration for main chat webview
   apiService.connectWebSocket();
   apiService.onWebSocketMessage((msg: string) => {
-    if (webviewProvider && typeof webviewProvider.postMessageToWebview === 'function') {
-      webviewProvider.postMessageToWebview({
-        command: 'addMessage',
-        message: {
-          type: 'assistant',
-          content: msg,
-          timestamp: new Date().toISOString()
-        }
-      });
+    if (webviewProvider && typeof webviewProvider.postAssistantMessage === 'function') {
+      webviewProvider.postAssistantMessage(msg);
     }
   });
 

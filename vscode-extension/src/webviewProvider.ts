@@ -90,6 +90,22 @@ export class CodeShiftWebviewProvider implements vscode.WebviewViewProvider {
     // Do not add any AI response here; WebSocket will handle it
   }
 
+  // Add this method to handle assistant message and hide typing indicator
+  public postAssistantMessage(content: string) {
+    if (!this._view) {
+      return;
+    }
+    this._view.webview.postMessage({
+      command: 'addMessage',
+      message: {
+        type: 'assistant',
+        content,
+        timestamp: new Date().toISOString()
+      }
+    });
+    this._view.webview.postMessage({ command: 'hideTyping' });
+  }
+
   private clearChat() {
     if (!this._view) {
       return;
@@ -200,15 +216,7 @@ export class CodeShiftWebviewProvider implements vscode.WebviewViewProvider {
                 <p>What would you like help with today?</p>
             </div>
         </div>
-        
-        <div id="typingIndicator" class="typing-indicator" style="display: none;">
-            <div class="typing-dots">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-            <span>CodeShiftAI is thinking...</span>
-        </div>
+        <!-- Remove the static typing indicator here -->
     </div>
 
     <div class="input-container">
