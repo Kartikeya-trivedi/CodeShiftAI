@@ -44,9 +44,9 @@ async def chat_endpoint(request:Request):
     return {"response": response}
    
 @app.post("/inline-completion")
-async def inline_compeltetion(request: Request):
-    data = await data.json()
-    return {"messgage: ":data}    
+async def inline_completion(request: Request):
+    data = await request.json()
+    return {"message": data}
 
 @app.post("/explain-code")
 async def explain_code(request: Request):

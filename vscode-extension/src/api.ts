@@ -2,6 +2,19 @@ import axios from 'axios';
 import * as vscode from 'vscode';
 import { ConfigurationManager, Logger, ErrorHandler } from './utils';
 
+// API Response interfaces
+interface ChatResponse {
+  response: string;
+}
+
+interface CodeResponse {
+  result: string;
+}
+
+interface HealthResponse {
+  status: string;
+}
+
 export class ApiService {
   private baseUrl: string;
   private ws?: any;
@@ -115,44 +128,111 @@ export class ApiService {
   // Stub: Get inline completion from API
   async getInlineCompletion(prefix: string, fileContent: string, language: string): Promise<string> {
     return Promise.resolve('');
-  }
-
-  // Stub: Send chat message to API
+  }  // Send chat message to API
   async sendChatMessage(message: string): Promise<string> {
-    return Promise.resolve('');
+    try {
+      if (!message || typeof message !== 'string') {
+        throw new Error('Invalid message provided');
+      }
+      
+      const response = await axios.post<ChatResponse>(`${this.baseUrl}/chat`, {
+        message: message
+      });
+      
+      if (response && response.data && typeof response.data.response === 'string') {
+        return response.data.response;
+      } else if (response && response.data && response.data.response !== undefined) {
+        return String(response.data.response);
+      } else {
+        return 'No response received from the service';
+      }
+    } catch (error) {
+      Logger.error('Failed to send chat message:', error);
+      throw new Error(ErrorHandler.handleApiError(error, 'Chat message'));
+    }
   }
 
-  // Stub: Connect WebSocket (no-op for now)
+  // Connect WebSocket
   connectWebSocket(): void {
-    // Optionally call this.initWebSocket() if you want to eagerly connect
+    this.initWebSocket().catch(error => {
+      Logger.error('Failed to connect WebSocket:', error);
+    });
   }
 
-  // Stub: Explain code
+  // Explain code
   async explainCode(request: any): Promise<any> {
-    return Promise.resolve({ suggestions: [] });
+    try {
+      const response = await axios.post<CodeResponse>(`${this.baseUrl}/explain-code`, request);
+      return { result: response.data.result, suggestions: [] };
+    } catch (error) {
+      Logger.error('Failed to explain code:', error);
+      throw new Error(ErrorHandler.handleApiError(error, 'Code explanation'));
+    }
   }
-  // Stub: Fix code
+
+  // Fix code
   async fixCode(request: any): Promise<any> {
-    return Promise.resolve({ suggestions: [] });
+    try {
+      const response = await axios.post<CodeResponse>(`${this.baseUrl}/fix-code`, request);
+      return { result: response.data.result, suggestions: [] };
+    } catch (error) {
+      Logger.error('Failed to fix code:', error);
+      throw new Error(ErrorHandler.handleApiError(error, 'Code fix'));
+    }
   }
-  // Stub: Optimize code
+
+  // Optimize code
   async optimizeCode(request: any): Promise<any> {
-    return Promise.resolve({ suggestions: [] });
+    try {
+      const response = await axios.post<CodeResponse>(`${this.baseUrl}/optimize-code`, request);
+      return { result: response.data.result, suggestions: [] };
+    } catch (error) {
+      Logger.error('Failed to optimize code:', error);
+      throw new Error(ErrorHandler.handleApiError(error, 'Code optimization'));
+    }
   }
-  // Stub: Generate tests
+
+  // Generate tests
   async generateTests(request: any): Promise<any> {
-    return Promise.resolve({ suggestions: [] });
+    try {
+      const response = await axios.post<CodeResponse>(`${this.baseUrl}/generate-tests`, request);
+      return { result: response.data.result, suggestions: [] };
+    } catch (error) {
+      Logger.error('Failed to generate tests:', error);
+      throw new Error(ErrorHandler.handleApiError(error, 'Test generation'));
+    }
   }
-  // Stub: Generate documentation
+
+  // Generate documentation
   async generateDocumentation(request: any): Promise<any> {
-    return Promise.resolve({ suggestions: [] });
+    try {
+      const response = await axios.post<CodeResponse>(`${this.baseUrl}/generate-docs`, request);
+      return { result: response.data.result, suggestions: [] };
+    } catch (error) {
+      Logger.error('Failed to generate documentation:', error);
+      throw new Error(ErrorHandler.handleApiError(error, 'Documentation generation'));
+    }
   }
-  // Stub: Refactor code
+
+  // Refactor code
   async refactorCode(request: any): Promise<any> {
-    return Promise.resolve({ suggestions: [] });
+    try {
+      const response = await axios.post<CodeResponse>(`${this.baseUrl}/refactor-code`, request);
+      return { result: response.data.result, suggestions: [] };
+    } catch (error) {
+      Logger.error('Failed to refactor code:', error);
+      throw new Error(ErrorHandler.handleApiError(error, 'Code refactoring'));
+    }
   }
-  // Stub: Health check
+
+  // Health check
   async healthCheck(): Promise<boolean> {
-    return Promise.resolve(false);
+    try {
+      const response = await axios.get<HealthResponse>(`${this.baseUrl}/health`);
+      return response.status === 200;
+    } catch (error) {
+      Logger.error('Health check failed:', error);
+      return false;
+    }
   }
 }

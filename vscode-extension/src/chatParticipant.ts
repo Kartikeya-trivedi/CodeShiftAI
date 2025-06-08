@@ -141,12 +141,32 @@ export class CodeShiftChatParticipant {
         break;
     }
   }
-
   private async handleExplainCommand(prompt: string, stream: any, token: vscode.CancellationToken): Promise<any> {
     stream.progress('Analyzing code...');
     
-    const response = await this.apiService.sendChatMessage(`Explain this code: ${prompt}`);
-    stream.markdown(response);
+    try {
+      const explainResponse = await this.apiService.explainCode({
+        code: prompt,
+        language: 'auto-detect',
+        context: 'Explain this code in detail'
+      });
+      
+      if (explainResponse && explainResponse.result) {
+        stream.markdown('## Code Explanation\n\n');
+        stream.markdown(explainResponse.result);
+        
+        if (explainResponse.suggestions && explainResponse.suggestions.length > 0) {
+          stream.markdown('\n\n## Additional Notes\n\n');
+          explainResponse.suggestions.forEach((suggestion: any, index: number) => {
+            stream.markdown(`${index + 1}. ${suggestion}\n`);
+          });
+        }
+      } else {
+        stream.markdown('❌ No explanation available. The service might be unavailable.');
+      }
+    } catch (error) {
+      stream.markdown(`❌ Error explaining code: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
     
     return {
       metadata: {
@@ -154,7 +174,6 @@ export class CodeShiftChatParticipant {
       }
     };
   }
-
   private async handleFixCommand(prompt: string, stream: any, token: vscode.CancellationToken): Promise<any> {
     stream.progress('Finding and fixing issues...');
     
@@ -165,14 +184,18 @@ export class CodeShiftChatParticipant {
         context: 'Fix any issues or bugs in this code'
       });
       
-      stream.markdown('## Fixed Code\n\n');
-      stream.markdown(`\`\`\`\n${fixResponse.result}\n\`\`\``);
-      
-      if (fixResponse.suggestions && fixResponse.suggestions.length > 0) {
-        stream.markdown('\n\n## Additional Suggestions\n\n');
-        fixResponse.suggestions.forEach((suggestion: any, index: number) => {
-          stream.markdown(`${index + 1}. ${suggestion}\n`);
-        });
+      if (fixResponse && fixResponse.result) {
+        stream.markdown('## Fixed Code\n\n');
+        stream.markdown(`\`\`\`\n${fixResponse.result}\n\`\`\``);
+        
+        if (fixResponse.suggestions && fixResponse.suggestions.length > 0) {
+          stream.markdown('\n\n## Additional Suggestions\n\n');
+          fixResponse.suggestions.forEach((suggestion: any, index: number) => {
+            stream.markdown(`${index + 1}. ${suggestion}\n`);
+          });
+        }
+      } else {
+        stream.markdown('❌ No fix suggestions available. The code might already be correct or the service is unavailable.');
       }
     } catch (error) {
       stream.markdown(`❌ Error fixing code: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -184,7 +207,6 @@ export class CodeShiftChatParticipant {
       }
     };
   }
-
   private async handleOptimizeCommand(prompt: string, stream: any, token: vscode.CancellationToken): Promise<any> {
     stream.progress('Optimizing code...');
     
@@ -195,14 +217,18 @@ export class CodeShiftChatParticipant {
         context: 'Optimize this code for better performance and readability'
       });
       
-      stream.markdown('## Optimized Code\n\n');
-      stream.markdown(`\`\`\`\n${optimizeResponse.result}\n\`\`\``);
-      
-      if (optimizeResponse.suggestions && optimizeResponse.suggestions.length > 0) {
-        stream.markdown('\n\n## Optimization Notes\n\n');
-        optimizeResponse.suggestions.forEach((suggestion: any, index: number) => {
-          stream.markdown(`${index + 1}. ${suggestion}\n`);
-        });
+      if (optimizeResponse && optimizeResponse.result) {
+        stream.markdown('## Optimized Code\n\n');
+        stream.markdown(`\`\`\`\n${optimizeResponse.result}\n\`\`\``);
+        
+        if (optimizeResponse.suggestions && optimizeResponse.suggestions.length > 0) {
+          stream.markdown('\n\n## Optimization Notes\n\n');
+          optimizeResponse.suggestions.forEach((suggestion: any, index: number) => {
+            stream.markdown(`${index + 1}. ${suggestion}\n`);
+          });
+        }
+      } else {
+        stream.markdown('❌ No optimization suggestions available. The code might already be optimal or the service is unavailable.');
       }
     } catch (error) {
       stream.markdown(`❌ Error optimizing code: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -214,7 +240,6 @@ export class CodeShiftChatParticipant {
       }
     };
   }
-
   private async handleTestCommand(prompt: string, stream: any, token: vscode.CancellationToken): Promise<any> {
     stream.progress('Generating tests...');
     
@@ -225,14 +250,18 @@ export class CodeShiftChatParticipant {
         context: 'Generate comprehensive unit tests for this code'
       });
       
-      stream.markdown('## Generated Tests\n\n');
-      stream.markdown(`\`\`\`\n${testResponse.result}\n\`\`\``);
-      
-      if (testResponse.suggestions && testResponse.suggestions.length > 0) {
-        stream.markdown('\n\n## Testing Recommendations\n\n');
-        testResponse.suggestions.forEach((suggestion: any, index: number) => {
-          stream.markdown(`${index + 1}. ${suggestion}\n`);
-        });
+      if (testResponse && testResponse.result) {
+        stream.markdown('## Generated Tests\n\n');
+        stream.markdown(`\`\`\`\n${testResponse.result}\n\`\`\``);
+        
+        if (testResponse.suggestions && testResponse.suggestions.length > 0) {
+          stream.markdown('\n\n## Testing Recommendations\n\n');
+          testResponse.suggestions.forEach((suggestion: any, index: number) => {
+            stream.markdown(`${index + 1}. ${suggestion}\n`);
+          });
+        }
+      } else {
+        stream.markdown('❌ No test suggestions available. The service might be unavailable.');
       }
     } catch (error) {
       stream.markdown(`❌ Error generating tests: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -244,7 +273,6 @@ export class CodeShiftChatParticipant {
       }
     };
   }
-
   private async handleDocsCommand(prompt: string, stream: any, token: vscode.CancellationToken): Promise<any> {
     stream.progress('Generating documentation...');
     
@@ -255,14 +283,18 @@ export class CodeShiftChatParticipant {
         context: 'Generate comprehensive documentation for this code'
       });
       
-      stream.markdown('## Generated Documentation\n\n');
-      stream.markdown(docsResponse.result);
-      
-      if (docsResponse.suggestions && docsResponse.suggestions.length > 0) {
-        stream.markdown('\n\n## Documentation Improvements\n\n');
-        docsResponse.suggestions.forEach((suggestion: any, index: number) => {
-          stream.markdown(`${index + 1}. ${suggestion}\n`);
-        });
+      if (docsResponse && docsResponse.result) {
+        stream.markdown('## Generated Documentation\n\n');
+        stream.markdown(docsResponse.result);
+        
+        if (docsResponse.suggestions && docsResponse.suggestions.length > 0) {
+          stream.markdown('\n\n## Documentation Improvements\n\n');
+          docsResponse.suggestions.forEach((suggestion: any, index: number) => {
+            stream.markdown(`${index + 1}. ${suggestion}\n`);
+          });
+        }
+      } else {
+        stream.markdown('❌ No documentation suggestions available. The service might be unavailable.');
       }
     } catch (error) {
       stream.markdown(`❌ Error generating documentation: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -274,7 +306,6 @@ export class CodeShiftChatParticipant {
       }
     };
   }
-
   private async handleRefactorCommand(prompt: string, stream: any, token: vscode.CancellationToken): Promise<any> {
     stream.progress('Refactoring code...');
     
@@ -286,14 +317,18 @@ export class CodeShiftChatParticipant {
         context: 'Refactor this code to improve structure and maintainability'
       });
       
-      stream.markdown('## Refactored Code\n\n');
-      stream.markdown(`\`\`\`\n${refactorResponse.result}\n\`\`\``);
-      
-      if (refactorResponse.suggestions && refactorResponse.suggestions.length > 0) {
-        stream.markdown('\n\n## Refactoring Notes\n\n');
-        refactorResponse.suggestions.forEach((suggestion: any, index: number) => {
-          stream.markdown(`${index + 1}. ${suggestion}\n`);
-        });
+      if (refactorResponse && refactorResponse.result) {
+        stream.markdown('## Refactored Code\n\n');
+        stream.markdown(`\`\`\`\n${refactorResponse.result}\n\`\`\``);
+        
+        if (refactorResponse.suggestions && refactorResponse.suggestions.length > 0) {
+          stream.markdown('\n\n## Refactoring Notes\n\n');
+          refactorResponse.suggestions.forEach((suggestion: any, index: number) => {
+            stream.markdown(`${index + 1}. ${suggestion}\n`);
+          });
+        }
+      } else {
+        stream.markdown('❌ No refactoring suggestions available. The code might already be well-structured or the service is unavailable.');
       }
     } catch (error) {
       stream.markdown(`❌ Error refactoring code: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -305,16 +340,23 @@ export class CodeShiftChatParticipant {
       }
     };
   }
-
   private async handleReviewCommand(prompt: string, stream: any, token: vscode.CancellationToken): Promise<any> {
     stream.progress('Reviewing code...');
     
-    const response = await this.apiService.sendChatMessage(
-      `Please review this code for quality, best practices, potential issues, and suggestions for improvement: ${prompt}`
-    );
-    
-    stream.markdown('## Code Review\n\n');
-    stream.markdown(response);
+    try {
+      const response = await this.apiService.sendChatMessage(
+        `Please review this code for quality, best practices, potential issues, and suggestions for improvement: ${prompt}`
+      );
+      
+      if (response && typeof response === 'string') {
+        stream.markdown('## Code Review\n\n');
+        stream.markdown(response);
+      } else {
+        stream.markdown('❌ No review available. The service might be unavailable.');
+      }
+    } catch (error) {
+      stream.markdown(`❌ Error reviewing code: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
     
     return {
       metadata: {
@@ -322,12 +364,20 @@ export class CodeShiftChatParticipant {
       }
     };
   }
-
   private async handleGeneralChat(prompt: string, stream: any, token: vscode.CancellationToken): Promise<any> {
     stream.progress('Thinking...');
     
-    const response = await this.apiService.sendChatMessage(prompt);
-    stream.markdown(response);
+    try {
+      const response = await this.apiService.sendChatMessage(prompt);
+      
+      if (response && typeof response === 'string') {
+        stream.markdown(response);
+      } else {
+        stream.markdown('❌ No response available. The service might be unavailable.');
+      }
+    } catch (error) {
+      stream.markdown(`❌ Error processing request: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
     
     return {
       metadata: {
