@@ -30,6 +30,29 @@ class ConnectionManager:
     async def send_message(self, message: str, websocket: WebSocket):
         await websocket.send_text(message)
 
+    def clean_response(self, response: str) -> str:
+        # Remove ANSI escape sequences
+        ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+        response = ansi_escape.sub('', response)
+
+        # Extract content after the last occurrence of "Response"
+        if "Response" in response:
+            last_part = response.split("Response")[-1]
+        else:
+            last_part = response
+
+        # Remove box-drawing characters and trim whitespace
+        clean_lines = [
+            re.sub(r"[┃┏┓┗┛━]+", "", line).strip()
+            for line in last_part.splitlines()
+            if line.strip()
+        ]
+        clean_response = "\n".join(clean_lines).strip()
+        return clean_response if clean_response else "No response extracted"
+
+    async def send_clean_response(self, response: str, websocket: WebSocket):
+        final_output = self.clean_response(response)
+        await self.send_message(final_output, websocket)
 manager = ConnectionManager()
 
 
@@ -41,11 +64,14 @@ async def root():
 async def chat_endpoint(request:Request):
     data= await request.json()
     response= await run_agent(data.get("message", ""))
-    return {"response": response}
+    clean = manager.clean_response(response)
+    return {"response": clean}
    
 @app.post("/inline-completion")
 async def inline_completion(request: Request):
     data = await request.json()
+    # If you want to clean the completion, you can do so here
+    # For now, just echo back
     return {"message": data}
 
 @app.post("/explain-code")
@@ -57,7 +83,8 @@ async def explain_code(request: Request):
     context = data.get("context", "")
     prompt = f"Explain the following {language} code from {file_path}:\n{code}\n{context}"
     response = await run_agent(prompt)
-    return {"result": response}
+    clean = manager.clean_response(response)
+    return {"result": clean}
 
 @app.post("/fix-code")
 async def fix_code(request: Request):
@@ -68,7 +95,8 @@ async def fix_code(request: Request):
     context = data.get("context", "")
     prompt = f"Fix any issues or bugs in the following {language} code from {file_path}:\n{code}\n{context}"
     response = await run_agent(prompt)
-    return {"result": response}
+    clean = manager.clean_response(response)
+    return {"result": clean}
 
 @app.post("/optimize-code")
 async def optimize_code(request: Request):
@@ -79,7 +107,8 @@ async def optimize_code(request: Request):
     context = data.get("context", "")
     prompt = f"Optimize the following {language} code from {file_path} for performance and readability:\n{code}\n{context}"
     response = await run_agent(prompt)
-    return {"result": response}
+    clean = manager.clean_response(response)
+    return {"result": clean}
 
 @app.post("/generate-tests")
 async def generate_tests(request: Request):
@@ -90,7 +119,8 @@ async def generate_tests(request: Request):
     context = data.get("context", "")
     prompt = f"Generate unit tests for the following {language} code from {file_path}:\n{code}\n{context}"
     response = await run_agent(prompt)
-    return {"result": response}
+    clean = manager.clean_response(response)
+    return {"result": clean}
 
 @app.post("/generate-docs")
 async def generate_docs(request: Request):
@@ -101,7 +131,8 @@ async def generate_docs(request: Request):
     context = data.get("context", "")
     prompt = f"Generate documentation for the following {language} code from {file_path}:\n{code}\n{context}"
     response = await run_agent(prompt)
-    return {"result": response}
+    clean = manager.clean_response(response)
+    return {"result": clean}
 
 @app.post("/refactor-code")
 async def refactor_code(request: Request):
@@ -113,7 +144,8 @@ async def refactor_code(request: Request):
     context = data.get("context", "")
     prompt = f"Refactor the following {language} code from {file_path} for {refactor_type}:\n{code}\n{context}"
     response = await run_agent(prompt)
-    return {"result": response}
+    clean = manager.clean_response(response)
+    return {"result": clean}
 
 # WebSocket endpoint
 @app.websocket("/ws/chat")
@@ -124,36 +156,7 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await websocket.receive_text()
             try:
                 response = await run_agent(data)
-
-                
-                                # Remove ANSI sequences
-                ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
-                response = ansi_escape.sub('', response)
-
-                # Extract response content after the last occurrence of "Response"
-                if "Response" in response:
-                    # Try to extract content after last 'Response' block
-                    parts = response.split("Response")
-                    last_part = parts[-1]
-                    
-                    # Remove box characters and extra padding
-                    clean_lines = []
-                    for line in last_part.splitlines():
-                        # Remove border characters and trim whitespace
-                        line = re.sub(r"[┃┏┓┗┛━]+", "", line).strip()
-                        if line:
-                            clean_lines.append(line)
-
-                    clean_response = "\n".join(clean_lines).strip()
-                else:
-                    clean_response = response.strip()
-
-                # If still empty, fallback
-                final_output = clean_response if clean_response else "No response extracted"
-
-                await manager.send_message(final_output, websocket)
-
-
+                await manager.send_clean_response(response, websocket)
             except Exception as e:
                 await manager.send_message(f"⚠️ Error: {str(e)}", websocket)
     except WebSocketDisconnect:
