@@ -1,27 +1,58 @@
-// Main chat interface JavaScript
+// IMMEDIATE SERVICE WORKER BLOCKING - MUST BE FIRST
 (function() {
-    // Block service worker registration in VS Code webview context
-    if (typeof navigator !== 'undefined' && navigator.serviceWorker) {
+    'use strict';
+    
+    // Block service worker registration at the earliest possible moment
+    if (typeof navigator !== 'undefined') {
+        // Completely remove serviceWorker property
+        try {
+            delete navigator.serviceWorker;
+        } catch (e) {
+            // If delete fails, override with undefined
+            navigator.serviceWorker = undefined;
+        }
+        
+        // Prevent any future assignment
         Object.defineProperty(navigator, 'serviceWorker', {
             get: function() {
-                return {
-                    register: function() {
-                        console.log('ServiceWorker registration blocked in VS Code webview');
-                        return Promise.reject(new Error('ServiceWorker registration is blocked in webview context'));
-                    },
-                    ready: Promise.reject(new Error('ServiceWorker not available in webview')),
-                    controller: null,
-                    getRegistration: function() {
-                        return Promise.resolve(undefined);
-                    },
-                    getRegistrations: function() {
-                        return Promise.resolve([]);
-                    }
-                };
+                console.warn('Service worker blocked in VS Code webview');
+                return undefined;
             },
-            configurable: true
+            set: function() {
+                console.warn('Service worker assignment blocked in VS Code webview');
+            },
+            configurable: false,
+            enumerable: false
         });
     }
+    
+    // Block global constructors
+    if (typeof window !== 'undefined') {
+        window.ServiceWorker = undefined;
+        window.ServiceWorkerContainer = undefined;
+        window.ServiceWorkerRegistration = undefined;
+        
+        // Block common registration methods
+        if (window.navigator) {
+            window.navigator.serviceWorker = undefined;
+        }
+    }
+    
+    // Block in self/global scope
+    if (typeof self !== 'undefined' && self !== window) {
+        self.ServiceWorker = undefined;
+        self.ServiceWorkerContainer = undefined;
+        self.ServiceWorkerRegistration = undefined;
+        if (self.navigator) {
+            self.navigator.serviceWorker = undefined;
+        }
+    }
+    
+    console.log('✅ Service workers completely blocked for VS Code webview');
+})();
+
+// Main chat interface JavaScript
+(function() {
 
     const vscode = acquireVsCodeApi();
       // Get DOM elements
@@ -98,23 +129,39 @@
             command: 'sendMessage',
             text: text
         });
-    }
-
-    function clearChat() {
+    }    function clearChat() {
+        console.log('Clear chat button clicked');
+        
         if (messages.length === 0) {
+            console.log('Chat is already empty');
             return;
         }
         
         if (confirm('Are you sure you want to clear the chat history?')) {
-            saveMessageState();
-            messages = [];
-            messagesContainer.innerHTML = getWelcomeMessage();
+            // Only notify extension, let it handle the UI update
             vscode.postMessage({ command: 'clearChat' });
-            updateUndoRedoButtons();
+            console.log('Clear chat request sent to extension');
         }
     }
 
+    function newChat() {
+        console.log('New chat button clicked');
+        
+        if (messages.length > 0) {
+            if (confirm('Start a new chat? Current conversation will be saved to history.')) {
+                // Only notify extension, let it handle the UI update
+                vscode.postMessage({ command: 'newChat' });
+                console.log('New chat request sent to extension');
+            }
+        } else {
+            // Even if empty, notify extension for consistency
+            vscode.postMessage({ command: 'newChat' });
+            console.log('New chat request sent to extension (already empty)');        }
+    }
+
     function exportChat() {
+        console.log('Export chat button clicked');
+        
         if (messages.length === 0) {
             vscode.postMessage({
                 command: 'showInformation',
@@ -132,25 +179,11 @@
             command: 'exportChat',
             data: chatData
         });
-    }    function openSettings() {
-        vscode.postMessage({ command: 'openSettings' });
     }
 
-    // New functions for undo, redo, and new chat
-    function newChat() {
-        if (messages.length > 0) {
-            if (confirm('Start a new chat? Current conversation will be saved to history.')) {
-                saveMessageState();
-                messages = [];
-                messagesContainer.innerHTML = getWelcomeMessage();
-                vscode.postMessage({ command: 'newChat' });
-                updateUndoRedoButtons();
-            }
-        } else {
-            // Already empty, just refresh
-            messagesContainer.innerHTML = getWelcomeMessage();
-            vscode.postMessage({ command: 'newChat' });
-        }
+    function openSettings() {
+        console.log('Settings button clicked');
+        vscode.postMessage({ command: 'openSettings' });
     }
 
     function undoAction() {
@@ -215,6 +248,7 @@
         }
     }    function handleExtensionMessage(event) {
         const message = event.data;
+        console.log('Received message from extension:', message);
         
         switch (message.command) {
             case 'addMessage':
@@ -227,21 +261,22 @@
                 hideTypingIndicator();
                 break;
             case 'clearMessages':
+                // Extension is telling us to clear - do the actual UI update
                 clearMessages();
+                console.log('Chat cleared by extension command');
                 break;
             case 'exportMessages':
                 exportMessages();
                 break;
             case 'newChat':
-                // Handle new chat command from extension
-                newChat();
+                // Extension is telling us to start new chat - do the actual UI update
+                clearMessages();
+                console.log('New chat started by extension command');
                 break;
             case 'undo':
-                // Handle undo command from extension
                 undoAction();
                 break;
             case 'redo':
-                // Handle redo command from extension
                 redoAction();
                 break;
         }
