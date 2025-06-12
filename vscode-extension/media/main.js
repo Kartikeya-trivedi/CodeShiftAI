@@ -70,27 +70,105 @@
     let messageHistory = []; // For undo/redo functionality
     let historyIndex = -1;    // Initialize event listeners
     function init() {
-        // Auto-resize textarea
-        messageInput.addEventListener('input', handleInputChange);
-        messageInput.addEventListener('keydown', handleKeyDown);
+        console.log('🚀 Initializing CodeShiftAI chat interface...');
         
-        // Button event listeners
-        sendBtn.addEventListener('click', sendMessage);
-        clearBtn.addEventListener('click', clearChat);
-        exportBtn.addEventListener('click', exportChat);
-        settingsBtn.addEventListener('click', openSettings);
-        undoBtn.addEventListener('click', undoAction);
-        redoBtn.addEventListener('click', redoAction);
-        newChatBtn.addEventListener('click', newChat);
+        // Debug: Check if all DOM elements exist
+        const elements = {
+            messagesContainer: !!messagesContainer,
+            messageInput: !!messageInput,
+            sendBtn: !!sendBtn,
+            clearBtn: !!clearBtn,
+            exportBtn: !!exportBtn,
+            settingsBtn: !!settingsBtn,
+            undoBtn: !!undoBtn,
+            redoBtn: !!redoBtn,
+            newChatBtn: !!newChatBtn
+        };
+        console.log('📋 DOM elements status:', elements);
+        
+        // Check for missing critical elements
+        const missingElements = Object.entries(elements)
+            .filter(([name, exists]) => !exists)
+            .map(([name]) => name);
+        
+        if (missingElements.length > 0) {
+            console.error('❌ Missing DOM elements:', missingElements);
+            return;
+        }
+        
+        // Auto-resize textarea
+        if (messageInput) {
+            messageInput.addEventListener('input', handleInputChange);
+            messageInput.addEventListener('keydown', handleKeyDown);
+        }
+        
+        // Button event listeners with detailed logging
+        if (sendBtn) {
+            sendBtn.addEventListener('click', sendMessage);
+            console.log('✅ Send button listener added');
+        }
+        
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function() {
+                console.log('🗑️ Clear button clicked');
+                clearChat();
+            });
+            console.log('✅ Clear button listener added');
+        }
+        
+        if (exportBtn) {
+            exportBtn.addEventListener('click', function() {
+                console.log('📤 Export button clicked');
+                exportChat();
+            });
+            console.log('✅ Export button listener added');
+        }
+        
+        if (settingsBtn) {
+            settingsBtn.addEventListener('click', function() {
+                console.log('⚙️ Settings button clicked');
+                openSettings();
+            });
+            console.log('✅ Settings button listener added');
+        }
+        
+        if (undoBtn) {
+            undoBtn.addEventListener('click', function() {
+                console.log('↶ Undo button clicked');
+                undoAction();
+            });
+            console.log('✅ Undo button listener added');
+        }
+        
+        if (redoBtn) {
+            redoBtn.addEventListener('click', function() {
+                console.log('↷ Redo button clicked');
+                redoAction();
+            });
+            console.log('✅ Redo button listener added');
+        }
+        
+        if (newChatBtn) {
+            newChatBtn.addEventListener('click', function() {
+                console.log('🆕 New chat button clicked');
+                newChat();
+            });
+            console.log('✅ New chat button listener added');
+        }
         
         // Focus input
-        messageInput.focus();
+        if (messageInput) {
+            messageInput.focus();
+        }
         
         // Listen for messages from extension
         window.addEventListener('message', handleExtensionMessage);
+        console.log('✅ Extension message listener added');
         
         // Update button states
         updateUndoRedoButtons();
+        
+        console.log('🎉 Initialization complete!');
     }
 
     function handleInputChange() {
