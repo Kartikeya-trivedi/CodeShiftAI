@@ -3,6 +3,7 @@ import sys
 from prompts import instructions
 from pathlib import Path
 from agno.agent import Agent
+from agno.tools.calculator import CalculatorTools
 from agno.tools.file import FileTools
 from agno.models.google import Gemini
 from agno.tools.python import PythonTools
@@ -15,6 +16,7 @@ import re
 from agno.vectordb.pineconedb import PineconeDb
 from agno.embedder.google import GeminiEmbedder
 from agno.storage.sqlite import SqliteStorage
+
 
 def clean_response(raw_text: str) -> str:
     # Remove ANSI escape sequences
@@ -171,6 +173,16 @@ async def run_agent(message: str, workspace_path: str = None) -> str:
             print("Context loaded and ready to use.")
 
     tools = [
+        CalculatorTools(
+            add=True,
+            subtract=True,
+            multiply=True,
+            divide=True,
+            exponentiate=True,
+            factorial=True,
+            is_prime=True,
+            square_root=True,
+        ),
         FileTools(base_dir=Path(workspace_path) if workspace_path else Path(file_path)),
         PythonTools(base_dir=Path(workspace_path) if workspace_path else Path(file_path)),
         MCPTools(f'npx -y "@modelcontextprotocol/server-filesystem" "{workspace_path if workspace_path else file_path}"'),
