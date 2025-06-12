@@ -39,18 +39,51 @@
     let messageHistory = []; // For undo/redo functionality
     let historyIndex = -1;    // Initialize event listeners
     function init() {
+        console.log('Initializing CodeShiftAI chat interface...');
+        
+        // Check if all DOM elements exist
+        console.log('DOM elements check:', {
+            messagesContainer: !!messagesContainer,
+            messageInput: !!messageInput,
+            sendBtn: !!sendBtn,
+            clearBtn: !!clearBtn,
+            exportBtn: !!exportBtn,
+            settingsBtn: !!settingsBtn,
+            undoBtn: !!undoBtn,
+            redoBtn: !!redoBtn,
+            newChatBtn: !!newChatBtn
+        });
+        
         // Auto-resize textarea
         messageInput.addEventListener('input', handleInputChange);
         messageInput.addEventListener('keydown', handleKeyDown);
         
         // Button event listeners
         sendBtn.addEventListener('click', sendMessage);
-        clearBtn.addEventListener('click', clearChat);
-        exportBtn.addEventListener('click', exportChat);
-        settingsBtn.addEventListener('click', openSettings);
-        undoBtn.addEventListener('click', undoAction);
-        redoBtn.addEventListener('click', redoAction);
-        newChatBtn.addEventListener('click', newChat);
+        clearBtn.addEventListener('click', function() {
+            console.log('Clear button clicked');
+            clearChat();
+        });
+        exportBtn.addEventListener('click', function() {
+            console.log('Export button clicked');
+            exportChat();
+        });
+        settingsBtn.addEventListener('click', function() {
+            console.log('Settings button clicked');
+            openSettings();
+        });
+        undoBtn.addEventListener('click', function() {
+            console.log('Undo button clicked');
+            undoAction();
+        });
+        redoBtn.addEventListener('click', function() {
+            console.log('Redo button clicked');
+            redoAction();
+        });
+        newChatBtn.addEventListener('click', function() {
+            console.log('New chat button clicked');
+            newChat();
+        });
         
         // Focus input
         messageInput.focus();
@@ -60,6 +93,8 @@
         
         // Update button states
         updateUndoRedoButtons();
+        
+        console.log('Initialization complete');
     }
 
     function handleInputChange() {
@@ -98,23 +133,20 @@
             command: 'sendMessage',
             text: text
         });
-    }
-
-    function clearChat() {
+    }    function clearChat() {
         if (messages.length === 0) {
+            // Show message if already empty
+            console.log('Chat is already empty');
+            showNotification('Chat is already empty.', 'info');
             return;
         }
         
         if (confirm('Are you sure you want to clear the chat history?')) {
-            saveMessageState();
-            messages = [];
-            messagesContainer.innerHTML = getWelcomeMessage();
+            // Only notify extension, UI will update on clearMessages from extension
             vscode.postMessage({ command: 'clearChat' });
-            updateUndoRedoButtons();
+            console.log('Clear chat requested, waiting for extension confirmation...');
         }
-    }
-
-    function exportChat() {
+    }    function exportChat() {
         if (messages.length === 0) {
             vscode.postMessage({
                 command: 'showInformation',
@@ -125,31 +157,46 @@
 
         const chatData = {
             timestamp: new Date().toISOString(),
-            messages: messages
+            messages: messages,
+            exportedBy: 'CodeShiftAI Extension',
+            version: '1.0.0'
         };
 
+        // Send export data to extension for processing
         vscode.postMessage({
             command: 'exportChat',
             data: chatData
         });
-    }    function openSettings() {
+
+        console.log('Export data sent to extension');
+        
+        // Show immediate feedback to user
+        const exportBtn = document.getElementById('exportBtn');
+        if (exportBtn) {
+            const originalText = exportBtn.innerHTML;
+            exportBtn.innerHTML = '<span class="codicon codicon-check"></span>';
+            exportBtn.disabled = true;
+            setTimeout(() => {
+                exportBtn.innerHTML = originalText;
+                exportBtn.disabled = false;
+            }, 2000);
+        }
+    }function openSettings() {
+        console.log('openSettings function called');
         vscode.postMessage({ command: 'openSettings' });
+        console.log('Settings message sent to extension');
     }
 
     // New functions for undo, redo, and new chat
     function newChat() {
         if (messages.length > 0) {
             if (confirm('Start a new chat? Current conversation will be saved to history.')) {
-                saveMessageState();
-                messages = [];
-                messagesContainer.innerHTML = getWelcomeMessage();
                 vscode.postMessage({ command: 'newChat' });
-                updateUndoRedoButtons();
+                console.log('New chat requested, waiting for extension confirmation...');
             }
         } else {
-            // Already empty, just refresh
-            messagesContainer.innerHTML = getWelcomeMessage();
             vscode.postMessage({ command: 'newChat' });
+            console.log('New chat requested (already empty), waiting for extension confirmation...');
         }
     }
 
@@ -215,7 +262,7 @@
         }
     }    function handleExtensionMessage(event) {
         const message = event.data;
-        
+        console.log('Received message from extension:', message);
         switch (message.command) {
             case 'addMessage':
                 addMessage(message.message);
@@ -228,24 +275,41 @@
                 break;
             case 'clearMessages':
                 clearMessages();
+                showNotification('Chat cleared.', 'success');
                 break;
             case 'exportMessages':
                 exportMessages();
                 break;
             case 'newChat':
-                // Handle new chat command from extension
-                newChat();
+                clearMessages();
+                showNotification('Started a new chat.', 'success');
                 break;
             case 'undo':
-                // Handle undo command from extension
                 undoAction();
                 break;
             case 'redo':
-                // Handle redo command from extension
                 redoAction();
                 break;
         }
-    }function addMessage(message) {
+    }
+
+    function showNotification(message, type = 'info') {
+        let notification = document.getElementById('codeshiftai-notification');
+        if (!notification) {
+            notification = document.createElement('div');
+            notification.id = 'codeshiftai-notification';
+            notification.className = 'codeshiftai-notification';
+            document.body.appendChild(notification);
+        }
+        notification.textContent = message;
+        notification.className = 'codeshiftai-notification ' + type;
+        notification.style.display = 'block';
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 2000);
+    }
+
+    function addMessage(message) {
         messages.push(message);
         
         // Save state for undo functionality when assistant responds

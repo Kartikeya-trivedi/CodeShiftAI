@@ -40,8 +40,7 @@ export class CodeShiftWebviewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage(
       message => {
         // Call all registered listeners (for WebSocket integration)
-        this._onDidReceiveMessageListeners.forEach(listener => listener(message));
-        // Existing logic (for legacy/demo):
+        this._onDidReceiveMessageListeners.forEach(listener => listener(message));        // Existing logic (for legacy/demo):
         switch (message.command) {
           case 'sendMessage':
             this.handleChatMessage(message.text);
@@ -50,7 +49,7 @@ export class CodeShiftWebviewProvider implements vscode.WebviewViewProvider {
             this.clearChat();
             break;
           case 'exportChat':
-            this.exportChat();
+            this.exportChat(message.data);
             break;
           case 'newChat':
             this.newChat();
@@ -60,6 +59,14 @@ export class CodeShiftWebviewProvider implements vscode.WebviewViewProvider {
             break;
           case 'redo':
             this.handleRedo();
+            break;
+          case 'openSettings':
+            this.openSettings();
+            break;
+          case 'showInformation':
+            if (message.message) {
+              vscode.window.showInformationMessage(message.message);
+            }
             break;
         }
       },
@@ -107,19 +114,14 @@ export class CodeShiftWebviewProvider implements vscode.WebviewViewProvider {
   }
 
   private clearChat() {
-    if (!this._view) {
-      return;
-    }
+    if (!this._view) { return; }
     this._view.webview.postMessage({ command: 'clearMessages' });
   }
 
   private newChat() {
-    if (!this._view) {
-      return;
-    }
+    if (!this._view) { return; }
     this._view.webview.postMessage({ command: 'newChat' });
-    // Execute VS Code command for new chat
-    vscode.commands.executeCommand('codeShiftAI.newChat');
+    // Optionally clear extension-side chat state here if needed
   }
 
   private handleUndo() {
@@ -139,12 +141,39 @@ export class CodeShiftWebviewProvider implements vscode.WebviewViewProvider {
     // Execute VS Code redo command
     vscode.commands.executeCommand('codeShiftAI.redo');
   }
-
-  private exportChat() {
+  private exportChat(data?: any) {
     if (!this._view) {
       return;
     }
-    this._view.webview.postMessage({ command: 'exportMessages' });
+    
+    // If data is provided, handle export with that data
+    if (data) {
+      // Create a blob with the chat data and trigger download
+      const chatJson = JSON.stringify(data, null, 2);
+      const fileName = `codeshift-chat-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+      
+      // Show save dialog
+      vscode.window.showSaveDialog({
+        defaultUri: vscode.Uri.file(fileName),
+        filters: {
+          'JSON files': ['json'],
+          'All files': ['*']
+        }
+      }).then(fileUri => {
+        if (fileUri) {
+          vscode.workspace.fs.writeFile(fileUri, Buffer.from(chatJson)).then(() => {
+            vscode.window.showInformationMessage(`Chat exported to ${fileUri.fsPath}`);
+          });
+        }
+      });
+    } else {
+      // Trigger export from webview
+      this._view.webview.postMessage({ command: 'exportMessages' });
+    }
+  }
+
+  private openSettings() {
+    vscode.commands.executeCommand('codeShiftAI.openSettings');
   }
   private _getHtmlForWebview(webview: vscode.Webview) {
     const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css'));
