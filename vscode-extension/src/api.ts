@@ -103,13 +103,17 @@ export class ApiService {
     });
     return this.wsOpenPromise;
   }
-
-  async sendWebSocketMessage(message: string): Promise<void> {
+  async sendWebSocketMessage(message: string, workspacePath?: string): Promise<void> {
     await this.initWebSocket();
     if (!this.ws || this.ws.readyState !== 1) {
       throw new Error('WebSocket is not open');
     }
-    this.ws.send(message);
+    
+    const messageData = workspacePath ? 
+      JSON.stringify({ message, workspacePath }) : 
+      message;
+    
+    this.ws.send(messageData);
   }
 
   onWebSocketMessage(callback: (msg: string) => void): void {
@@ -129,15 +133,21 @@ export class ApiService {
   async getInlineCompletion(prefix: string, fileContent: string, language: string): Promise<string> {
     return Promise.resolve('');
   }  // Send chat message to API
-  async sendChatMessage(message: string): Promise<string> {
+  async sendChatMessage(message: string, workspacePath?: string): Promise<string> {
     try {
       if (!message || typeof message !== 'string') {
         throw new Error('Invalid message provided');
       }
       
-      const response = await axios.post<ChatResponse>(`${this.baseUrl}/chat`, {
+      const requestData: any = {
         message: message
-      });
+      };
+      
+      if (workspacePath) {
+        requestData.workspacePath = workspacePath;
+      }
+      
+      const response = await axios.post<ChatResponse>(`${this.baseUrl}/chat`, requestData);
       
       if (response && response.data && typeof response.data.response === 'string') {
         return response.data.response;

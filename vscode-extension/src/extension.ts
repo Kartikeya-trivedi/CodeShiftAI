@@ -286,11 +286,12 @@ export function activate(context: vscode.ExtensionContext) {
       webviewProvider.postAssistantMessage(msg);
     }
   });
-
   if (webviewProvider && typeof webviewProvider.onDidReceiveMessage === 'function') {
     webviewProvider.onDidReceiveMessage((message: any) => {
       if (message.command === 'sendMessage') {
-        apiService.sendWebSocketMessage(message.text);
+        // Get workspace folder path
+        const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        apiService.sendWebSocketMessage(message.text, workspacePath);
       }
     });
   }
@@ -341,6 +342,11 @@ async function handleCodeAnalysisCommand(
     vscode.window.showInformationMessage('No code selected. Please select some code first.');
     return;
   }
+
+  // Get workspace folder information
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri);
+  const workspacePath = workspaceFolder ? workspaceFolder.uri.fsPath : vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+
   await vscode.window.withProgress({
     location: vscode.ProgressLocation.Notification,
     title: `CodeShiftAI is ${analysisType === 'explain' ? 'analyzing' : 'processing'} your code...`,
@@ -351,30 +357,38 @@ async function handleCodeAnalysisCommand(
       const fileName = editor.document.fileName;
       const languageId = editor.document.languageId;
       
+      // Prepare request data with workspace information
+      const requestData = {
+        code: selectedText,
+        language: languageId,
+        filePath: fileName,
+        workspacePath: workspacePath
+      };
+      
       // Call the appropriate API method based on analysis type
       switch (analysisType) {
         case 'explain':
-          const explainResponse = await apiService.explainCode({ code: selectedText, language: languageId, filePath: fileName });
+          const explainResponse = await apiService.explainCode(requestData);
           result = explainResponse.result;
           break;
         case 'fix':
-          const fixResponse = await apiService.fixCode({ code: selectedText, language: languageId, filePath: fileName });
+          const fixResponse = await apiService.fixCode(requestData);
           result = fixResponse.result;
           break;
         case 'optimize':
-          const optimizeResponse = await apiService.optimizeCode({ code: selectedText, language: languageId, filePath: fileName });
+          const optimizeResponse = await apiService.optimizeCode(requestData);
           result = optimizeResponse.result;
           break;
         case 'generateTests':
-          const testsResponse = await apiService.generateTests({ code: selectedText, language: languageId, filePath: fileName });
+          const testsResponse = await apiService.generateTests(requestData);
           result = testsResponse.result;
           break;
         case 'generateDocs':
-          const docsResponse = await apiService.generateDocumentation({ code: selectedText, language: languageId, filePath: fileName });
+          const docsResponse = await apiService.generateDocumentation(requestData);
           result = docsResponse.result;
           break;
         case 'refactor':
-          const refactorResponse = await apiService.refactorCode({ code: selectedText, language: languageId, filePath: fileName, refactorType: 'general' });
+          const refactorResponse = await apiService.refactorCode({ ...requestData, refactorType: 'general' });
           result = refactorResponse.result;
           break;
         default:

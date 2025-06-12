@@ -1,8 +1,7 @@
-{
-  "name": "codeshiftai",
+{  "name": "codeshiftai",
   "displayName": "CodeShiftAI",
   "description": "an AI-powered extension to help you with your code",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "engines": {
     "vscode": "^1.100.0"
   },

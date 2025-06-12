@@ -1,5 +1,28 @@
 // Main chat interface JavaScript
 (function() {
+    // Block service worker registration in VS Code webview context
+    if (typeof navigator !== 'undefined' && navigator.serviceWorker) {
+        Object.defineProperty(navigator, 'serviceWorker', {
+            get: function() {
+                return {
+                    register: function() {
+                        console.log('ServiceWorker registration blocked in VS Code webview');
+                        return Promise.reject(new Error('ServiceWorker registration is blocked in webview context'));
+                    },
+                    ready: Promise.reject(new Error('ServiceWorker not available in webview')),
+                    controller: null,
+                    getRegistration: function() {
+                        return Promise.resolve(undefined);
+                    },
+                    getRegistrations: function() {
+                        return Promise.resolve([]);
+                    }
+                };
+            },
+            configurable: true
+        });
+    }
+
     const vscode = acquireVsCodeApi();
       // Get DOM elements
     const messagesContainer = document.getElementById('messagesContainer');

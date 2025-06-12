@@ -64,7 +64,7 @@ def load_files_to_vector_db(directory_path, file_extensions=None):
         file_extensions: List of file extensions to include (defaults to common source files)
     """
     if file_extensions is None:
-        file_extensions = ['.py', '.js', '.ts', '.html', '.css']
+        file_extensions = ['.py', '.js', '.ts', '.html', '.css', '.jsx', '.tsx', '.json', '.md']
 
     # Use the global embedder instance
     global gemini_embedder
@@ -134,13 +134,14 @@ def load_files_to_vector_db(directory_path, file_extensions=None):
 # Initialize with the current working directory
 # This ensures only relevant context is used from where the script is run
 current_directory = os.getcwd()  # Get the current working directory
-print(f"Current working directory: {current_directory}")
+print(f"Default working directory: {current_directory}")
 
 # Function to load files only when requested
-def load_context():
-    """Load the current working directory into the vector database."""
-    print(f"Loading files from {current_directory} into vector database...")
-    return load_files_to_vector_db(current_directory)
+def load_context(workspace_path=None):
+    """Load the specified workspace directory or current working directory into the vector database."""
+    target_directory = workspace_path if workspace_path and os.path.exists(workspace_path) else current_directory
+    print(f"Loading files from {target_directory} into vector database...")
+    return load_files_to_vector_db(target_directory)
 
 def clear_vector_db():
     """Clear all files from the vector database to start fresh in next session."""
@@ -155,7 +156,7 @@ def clear_vector_db():
 # Only connect the vector database as knowledge base after user requests it
 knowledge_base = None
 
-async def run_agent(message: str) -> str:
+async def run_agent(message: str, workspace_path: str = None) -> str:
     """Run the universal coding assistant agent and return the response as string."""
 
     global knowledge_base
@@ -163,17 +164,16 @@ async def run_agent(message: str) -> str:
 
     # Check if the user wants to use codebase context
     if any(keyword in message.lower() for keyword in ["use context", "need context", "with context", "load context"]):
-        # Load context from files if not already loaded
-        if knowledge_base is None:
+        # Load context from files if not already loaded        if knowledge_base is None:
             print("Loading code context as requested...")
-            load_context()
+            load_context(workspace_path)
             knowledge_base = vector_db
             print("Context loaded and ready to use.")
 
     tools = [
-        FileTools(),
-        PythonTools(),
-        MCPTools(f'npx -y "@modelcontextprotocol/server-filesystem" "{file_path}"'),
+        FileTools(base_dir=Path(workspace_path) if workspace_path else Path(file_path)),
+        PythonTools(base_dir=Path(workspace_path) if workspace_path else Path(file_path)),
+        MCPTools(f'npx -y "@modelcontextprotocol/server-filesystem" "{workspace_path if workspace_path else file_path}"'),
     ]
 
     agent = Agent(
@@ -200,6 +200,16 @@ async def run_agent(message: str) -> str:
 
 # for CLI use
 if __name__ == "__main__":
-    message = sys.argv[1] if len(sys.argv) > 1 else "analyse the project directory and suggest some things?"
+    workspace_arg = None
+    message_arg = "analyse the project directory and suggest some things?"
     
-    print(asyncio.run(run_agent(message)))
+    # Parse command line arguments
+    if len(sys.argv) > 1:
+        if sys.argv[1].startswith("--workspace="):
+            workspace_arg = sys.argv[1].split("=", 1)[1]
+            message_arg = sys.argv[2] if len(sys.argv) > 2 else message_arg
+        else:
+            message_arg = sys.argv[1]
+            workspace_arg = sys.argv[2] if len(sys.argv) > 2 else None
+    
+    print(asyncio.run(run_agent(message_arg, workspace_arg)))

@@ -63,7 +63,8 @@ async def root():
 @app.post("/chat")
 async def chat_endpoint(request:Request):
     data= await request.json()
-    response= await run_agent(data.get("message", ""))
+    workspace_path = data.get("workspacePath", "")
+    response= await run_agent(data.get("message", ""), workspace_path)
     clean = manager.clean_response(response)
     return {"response": clean}
    
@@ -80,9 +81,10 @@ async def explain_code(request: Request):
     code = data.get("code", "")
     language = data.get("language", "")
     file_path = data.get("filePath", "")
+    workspace_path = data.get("workspacePath", "")
     context = data.get("context", "")
     prompt = f"Explain the following {language} code from {file_path}:\n{code}\n{context}"
-    response = await run_agent(prompt)
+    response = await run_agent(prompt, workspace_path)
     clean = manager.clean_response(response)
     return {"result": clean}
 
@@ -92,9 +94,10 @@ async def fix_code(request: Request):
     code = data.get("code", "")
     language = data.get("language", "")
     file_path = data.get("filePath", "")
+    workspace_path = data.get("workspacePath", "")
     context = data.get("context", "")
     prompt = f"Fix any issues or bugs in the following {language} code from {file_path}:\n{code}\n{context}"
-    response = await run_agent(prompt)
+    response = await run_agent(prompt, workspace_path)
     clean = manager.clean_response(response)
     return {"result": clean}
 
@@ -104,9 +107,10 @@ async def optimize_code(request: Request):
     code = data.get("code", "")
     language = data.get("language", "")
     file_path = data.get("filePath", "")
+    workspace_path = data.get("workspacePath", "")
     context = data.get("context", "")
     prompt = f"Optimize the following {language} code from {file_path} for performance and readability:\n{code}\n{context}"
-    response = await run_agent(prompt)
+    response = await run_agent(prompt, workspace_path)
     clean = manager.clean_response(response)
     return {"result": clean}
 
@@ -116,9 +120,10 @@ async def generate_tests(request: Request):
     code = data.get("code", "")
     language = data.get("language", "")
     file_path = data.get("filePath", "")
+    workspace_path = data.get("workspacePath", "")
     context = data.get("context", "")
     prompt = f"Generate unit tests for the following {language} code from {file_path}:\n{code}\n{context}"
-    response = await run_agent(prompt)
+    response = await run_agent(prompt, workspace_path)
     clean = manager.clean_response(response)
     return {"result": clean}
 
@@ -128,9 +133,10 @@ async def generate_docs(request: Request):
     code = data.get("code", "")
     language = data.get("language", "")
     file_path = data.get("filePath", "")
+    workspace_path = data.get("workspacePath", "")
     context = data.get("context", "")
     prompt = f"Generate documentation for the following {language} code from {file_path}:\n{code}\n{context}"
-    response = await run_agent(prompt)
+    response = await run_agent(prompt, workspace_path)
     clean = manager.clean_response(response)
     return {"result": clean}
 
@@ -140,12 +146,17 @@ async def refactor_code(request: Request):
     code = data.get("code", "")
     language = data.get("language", "")
     file_path = data.get("filePath", "")
+    workspace_path = data.get("workspacePath", "")
     refactor_type = data.get("refactorType", "general")
     context = data.get("context", "")
     prompt = f"Refactor the following {language} code from {file_path} for {refactor_type}:\n{code}\n{context}"
-    response = await run_agent(prompt)
+    response = await run_agent(prompt, workspace_path)
     clean = manager.clean_response(response)
     return {"result": clean}
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
 
 # WebSocket endpoint
 @app.websocket("/ws/chat")
@@ -155,7 +166,17 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             data = await websocket.receive_text()
             try:
-                response = await run_agent(data)
+                # Try to parse JSON data that might include workspace path
+                import json
+                try:
+                    parsed_data = json.loads(data)
+                    message = parsed_data.get("message", data)
+                    workspace_path = parsed_data.get("workspacePath", "")
+                except (json.JSONDecodeError, AttributeError):
+                    message = data
+                    workspace_path = ""
+                
+                response = await run_agent(message, workspace_path)
                 await manager.send_clean_response(response, websocket)
             except Exception as e:
                 await manager.send_message(f"⚠️ Error: {str(e)}", websocket)

@@ -140,15 +140,17 @@ export class CodeShiftChatParticipant {
         // Handle other commands
         break;
     }
-  }
-  private async handleExplainCommand(prompt: string, stream: any, token: vscode.CancellationToken): Promise<any> {
+  }  private async handleExplainCommand(prompt: string, stream: any, token: vscode.CancellationToken): Promise<any> {
     stream.progress('Analyzing code...');
     
     try {
+      // Get workspace folder path
+      const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
       const explainResponse = await this.apiService.explainCode({
         code: prompt,
         language: 'auto-detect',
-        context: 'Explain this code in detail'
+        context: 'Explain this code in detail',
+        workspacePath: workspacePath
       });
       
       if (explainResponse && explainResponse.result) {
@@ -173,15 +175,17 @@ export class CodeShiftChatParticipant {
         command: 'explain'
       }
     };
-  }
-  private async handleFixCommand(prompt: string, stream: any, token: vscode.CancellationToken): Promise<any> {
+  }  private async handleFixCommand(prompt: string, stream: any, token: vscode.CancellationToken): Promise<any> {
     stream.progress('Finding and fixing issues...');
     
     try {
+      // Get workspace folder path
+      const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
       const fixResponse = await this.apiService.fixCode({
         code: prompt,
         language: 'auto-detect',
-        context: 'Fix any issues or bugs in this code'
+        context: 'Fix any issues or bugs in this code',
+        workspacePath: workspacePath
       });
       
       if (fixResponse && fixResponse.result) {
@@ -209,12 +213,14 @@ export class CodeShiftChatParticipant {
   }
   private async handleOptimizeCommand(prompt: string, stream: any, token: vscode.CancellationToken): Promise<any> {
     stream.progress('Optimizing code...');
-    
-    try {
+      try {
+      // Get workspace folder path
+      const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
       const optimizeResponse = await this.apiService.optimizeCode({
         code: prompt,
         language: 'auto-detect',
-        context: 'Optimize this code for better performance and readability'
+        context: 'Optimize this code for better performance and readability',
+        workspacePath: workspacePath
       });
       
       if (optimizeResponse && optimizeResponse.result) {
@@ -242,12 +248,14 @@ export class CodeShiftChatParticipant {
   }
   private async handleTestCommand(prompt: string, stream: any, token: vscode.CancellationToken): Promise<any> {
     stream.progress('Generating tests...');
-    
-    try {
+      try {
+      // Get workspace folder path
+      const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
       const testResponse = await this.apiService.generateTests({
         code: prompt,
         language: 'auto-detect',
-        context: 'Generate comprehensive unit tests for this code'
+        context: 'Generate comprehensive unit tests for this code',
+        workspacePath: workspacePath
       });
       
       if (testResponse && testResponse.result) {
@@ -275,12 +283,14 @@ export class CodeShiftChatParticipant {
   }
   private async handleDocsCommand(prompt: string, stream: any, token: vscode.CancellationToken): Promise<any> {
     stream.progress('Generating documentation...');
-    
-    try {
+      try {
+      // Get workspace folder path
+      const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
       const docsResponse = await this.apiService.generateDocumentation({
         code: prompt,
         language: 'auto-detect',
-        context: 'Generate comprehensive documentation for this code'
+        context: 'Generate comprehensive documentation for this code',
+        workspacePath: workspacePath
       });
       
       if (docsResponse && docsResponse.result) {
@@ -308,13 +318,15 @@ export class CodeShiftChatParticipant {
   }
   private async handleRefactorCommand(prompt: string, stream: any, token: vscode.CancellationToken): Promise<any> {
     stream.progress('Refactoring code...');
-    
-    try {
+      try {
+      // Get workspace folder path
+      const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
       const refactorResponse = await this.apiService.refactorCode({
         code: prompt,
         language: 'auto-detect',
         refactorType: 'general',
-        context: 'Refactor this code to improve structure and maintainability'
+        context: 'Refactor this code to improve structure and maintainability',
+        workspacePath: workspacePath
       });
       
       if (refactorResponse && refactorResponse.result) {
@@ -339,13 +351,15 @@ export class CodeShiftChatParticipant {
         command: 'refactor'
       }
     };
-  }
-  private async handleReviewCommand(prompt: string, stream: any, token: vscode.CancellationToken): Promise<any> {
+  }  private async handleReviewCommand(prompt: string, stream: any, token: vscode.CancellationToken): Promise<any> {
     stream.progress('Reviewing code...');
     
     try {
+      // Get workspace folder path
+      const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
       const response = await this.apiService.sendChatMessage(
-        `Please review this code for quality, best practices, potential issues, and suggestions for improvement: ${prompt}`
+        `Please review this code for quality, best practices, potential issues, and suggestions for improvement: ${prompt}`,
+        workspacePath
       );
       
       if (response && typeof response === 'string') {
@@ -363,12 +377,13 @@ export class CodeShiftChatParticipant {
         command: 'review'
       }
     };
-  }
-  private async handleGeneralChat(prompt: string, stream: any, token: vscode.CancellationToken): Promise<any> {
+  }private async handleGeneralChat(prompt: string, stream: any, token: vscode.CancellationToken): Promise<any> {
     stream.progress('Thinking...');
     
     try {
-      const response = await this.apiService.sendChatMessage(prompt);
+      // Get workspace folder path
+      const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+      const response = await this.apiService.sendChatMessage(prompt, workspacePath);
       
       if (response && typeof response === 'string') {
         stream.markdown(response);
