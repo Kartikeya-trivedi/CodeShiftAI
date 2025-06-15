@@ -1,7 +1,9 @@
 {  "name": "codeshiftai",
   "displayName": "CodeShiftAI",
+  "publisher": "Mindrix",
   "description": "an AI-powered extension to help you with your code",
-  "version": "0.1.1",
+  "version": "0.1.2",
+  "icon": "resources/icon.png",
   "engines": {
     "vscode": "^1.100.0"
   },
