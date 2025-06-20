@@ -1,9 +1,10 @@
 {
   "name": "codeshiftai",
   "displayName": "CodeShiftAI",
-  "description": "AI-powered VS Code extension for intelligent code transformation, explanation, debugging, and documentation generation",
-  "version": "0.1.2",
   "publisher": "Mindrix",
+  "description": "an AI-powered extension to help you with your code",
+  "version": "0.1.2",
+  "icon": "resources/icon.png",
   "engines": {
     "vscode": "^1.100.0"
   },

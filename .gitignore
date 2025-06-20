@@ -5,3 +5,6 @@ __pycache__/
 out/
 .vscode-test/
 data.db
+.venv/
+tmp/
+

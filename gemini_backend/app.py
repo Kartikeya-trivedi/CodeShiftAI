@@ -68,12 +68,7 @@ async def chat_endpoint(request:Request):
     clean = manager.clean_response(response)
     return {"response": clean}
    
-@app.post("/inline-completion")
-async def inline_completion(request: Request):
-    data = await request.json()
-    # If you want to clean the completion, you can do so here
-    # For now, just echo back
-    return {"message": data}
+
 
 @app.post("/explain-code")
 async def explain_code(request: Request):
