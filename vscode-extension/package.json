@@ -1,13 +1,54 @@
-{  "name": "codeshiftai",
+{
+  "name": "codeshiftai",
   "displayName": "CodeShiftAI",
-  "description": "an AI-powered extension to help you with your code",
-  "version": "0.1.1",
+  "description": "AI-powered VS Code extension for intelligent code transformation, explanation, debugging, and documentation generation",
+  "version": "0.1.2",
+  "publisher": "Mindrix",
   "engines": {
     "vscode": "^1.100.0"
   },
   "categories": [
+    "Machine Learning",
     "Other"
   ],
+  "keywords": [
+    "ai",
+    "code generation",
+    "code explanation",
+    "debugging",
+    "documentation",
+    "gemini",
+    "artificial intelligence",
+    "code assistance"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mindrix/CodeShiftAI.git"
+  },
+  "homepage": "https://github.com/Mindrix/CodeShiftAI",
+  "bugs": {
+    "url": "https://github.com/Mindrix/CodeShiftAI/issues"
+  },  "author": {
+    "name": "Mindrix",
+    "email": "Mindrix25@gmail.com",
+    "url": "https://mindrix.dev"
+  },
+  "license": "MIT",
+  "icon": "resources/icon.png",  "galleryBanner": {
+    "color": "#1a1a2e",
+    "theme": "dark"
+  },
+  "badges": [
+    {
+      "url": "https://img.shields.io/github/stars/Mindrix/CodeShiftAI.svg?style=social&label=Star",
+      "href": "https://github.com/Mindrix/CodeShiftAI",
+      "description": "Star on GitHub"
+    }
+  ],
+  "qna": "marketplace",
+  "sponsors": {
+    "url": "https://github.com/sponsors/Mindrix"
+  },
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {

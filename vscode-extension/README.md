@@ -149,8 +149,20 @@ The extension consists of several key components:
 
 We welcome contributions! Please see our contributing guidelines for more information.
 
+## Connect with Us
+
+- **Website**: [mindrix.dev](https://mindrix.dev)
+- **X (Twitter)**: [@Mindrix25](https://x.com/Mindrix25)
+- **LinkedIn**: [Mindrix](https://www.linkedin.com/company/mindrix1/?viewAsMember=true)
+- **Email**: [Mindrix25@gmail.com](mailto:Mindrix25@gmail.com)
+
+## Support
+
+If you encounter any issues or have questions:
+- ⭐ Contact us via [Email](mailto:Mindrix25@gmail.com) for direct support
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-**Enjoy coding with AI assistance!**
+**Enjoy coding with AI assistance!** 🚀
