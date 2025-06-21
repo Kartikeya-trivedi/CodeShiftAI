@@ -7,4 +7,9 @@ out/
 data.db
 .venv/
 tmp/
+out
+dist
+node_modules
+.vscode-test/
+*.vsix
 
